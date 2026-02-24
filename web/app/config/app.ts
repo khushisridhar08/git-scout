@@ -1,6 +1,8 @@
-// App settings
 export const APP_CONFIG = {
-	NAME: "XORS Starter",
-	DESCRIPTION: "A Next.js website starter for XORS projects.",
-	URL: "https://xors.io",
+	NAME: "GitScout",
+	DESCRIPTION: "Discover and evaluate developers using GitHub data.",
+	URL: "https://gitscout.dev",
 }
+
+export const API_BASE_URL =
+	process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
