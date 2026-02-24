@@ -1,98 +1,121 @@
-# UI Design – Global Navigation & API Rate Limit Indicator
+# UI Design – Global Navigation & Search Pages (GitScout)
 
-This document describes the finalized UI design and implementation-ready specifications for the global navigation bar and API rate limit indicator used across GitScout.
-
----
-
-## 1. Global Navigation Overview
-
-A persistent top navigation bar is displayed across all main pages of the application.
-
-### Layout Structure
-
-- Header height: approximately **56–64px**
-- Content is vertically centered within the header
-- Header width aligns with the main content container
-- Navigation is visually divided into three regions:
-  - **Left:** Branding
-  - **Center:** Primary navigation links
-  - **Right:** Utility area
+This document provides implementation-ready UI specifications for the GitScout global navigation and search experience.  
+The goal is to eliminate ambiguity so the frontend can implement layouts, spacing, and component structure without guessing.
 
 ---
 
-## 2. Left Section – Branding
+## 1. Overall Page Layout
 
-- Displays the text logo **“GitScout”**
-- Styled as primary branding (white text on dark background)
-- Clicking the logo routes the user to the main search page (`/search`)
+- Desktop-first layout (minimum viewport width: ~1280px)
+- The page is divided into three primary regions:
+  1. Global top navigation bar
+  2. Left-side filter panel
+  3. Main content area (search results)
 
----
-
-## 3. Center Section – Primary Navigation
-
-- Contains primary navigation links:
-  - **Search**
-  - **Shortlists**
-- Links are displayed as text buttons
-- Default state uses muted white to reduce visual noise
-- Active page may use brighter white or an underline to indicate selection
+- The global navigation bar is fixed to the top of the viewport.
+- The filter panel and main content scroll vertically with the page.
 
 ---
 
-## 4. Right Section – Utility Area
+## 2. Global Navigation Bar
 
-The right section contains utility-related UI elements aligned horizontally.
+- Height: ~64px
+- Position: Fixed at top of viewport
+- Layout:
+  - Left:
+    - GitScout logo
+    - Primary navigation links: `Search`, `Shortlists`
+  - Right:
+    - API rate limit indicator
+    - Theme toggle (light / dark mode)
 
-### 4.1 API Rate Limit Indicator
-
-The API rate limit indicator is a pill-style component that communicates the current GitHub API usage state.
-
-#### Visual Style
-
-- Rounded pill container
-- Consistent padding across all states to prevent layout shift
-- Contains:
-  - A small colored dot indicating status
-  - Text describing remaining API requests
-
-#### States
-
-| State   | Condition              | Color  | Text Display              |
-|--------|------------------------|--------|---------------------------|
-| Normal | remaining > 100        | Green  | `API: {n} remaining`      |
-| Warning| remaining ≤ 100        | Yellow | `API: {n} remaining`      |
-| Limit  | remaining = 0          | Red    | `API limit reached`       |
-
-- `{n}` represents the remaining request count returned by the API
-- Color and text update dynamically based on the state
-- The indicator is informational and does not require user interaction
-
-#### Component Notes
-
-- Treated as a reusable UI component
-- Fixed height across states
-- Does not trigger layout changes when state updates
+- The navigation bar remains visible while scrolling.
+- API rate limit indicator text format examples:
+  - `API: 320 remaining`
+  - `API: 80 remaining`
+  - `API limit reached`
 
 ---
 
-### 4.2 Theme Toggle
+## 3. Filter Panel
 
-- A theme toggle icon (e.g., moon icon) is placed to the right of the API indicator
-- Toggles between light and dark mode
-- Icon-only button, no text label required
+- Position: Left side of the page
+- Fixed width: ~280px
+- Vertical layout
+- Does not scroll independently; scrolls together with the main page
+
+### Filter controls include:
+- Primary language (dropdown)
+- Location (text input)
+- Followers (min / max numeric inputs)
+- Public repositories (min / max numeric inputs)
+- Sort results by (dropdown, e.g. Best Match, Highest Score)
 
 ---
 
-## 5. Visual Reference
+## 4. Search & Results Header
 
-- `nav-wireframe.png`: Structural layout reference
-- `rate-limit-states.png`: API rate limit indicator state reference
-- `nav-final.png`: Final visual mock of the global navigation
+- Search input is displayed at the top of the main content area.
+- Search input supports text-based queries (e.g. name, username, bio keywords).
+- Below the search input:
+  - Results summary text (e.g. `1,204 developers found`)
+  - Optional pagination or result range indicator (e.g. `Showing 1–10`)
 
 ---
 
-## 6. Design Intent
+## 5. Results Grid Layout
 
-The navigation is designed to remain visually minimal while clearly communicating system status. The API rate limit indicator is intentionally prominent but non-intrusive, allowing users to stay aware of usage limits without interrupting normal workflows.
+- Results are displayed in a card-based grid layout.
+- Desktop layout uses two columns.
+- Card sizing:
+  - Maximum width per card: ~420px
+- Spacing:
+  - Horizontal gap between cards: ~24px
+  - Vertical gap between rows: ~24px
 
-This UI specification is intended to allow frontend implementation without ambiguity or additional clarification.
+- The results grid scrolls vertically within the page.
+
+---
+
+## 6. Candidate Card Structure
+
+Each candidate card contains the following elements:
+
+- Top section:
+  - Avatar aligned to the top-left
+  - Candidate name and username displayed horizontally
+  - GitScout score badge aligned to the top-right
+
+- Metadata row below name:
+  - Repository count
+  - Follower count
+  - Location (if available)
+
+- Skills section:
+  - Displayed as tag-style labels
+  - Shows top languages or primary technologies
+
+---
+
+## 7. UI States
+
+### Loading State
+- Skeleton cards displayed in the same grid layout as results
+- Prevents layout shift when data loads
+
+### Empty State
+- Centered message in the results area indicating no matching developers
+- Example: `No developers found for the current filters`
+
+### Error State
+- Inline error message displayed in the results area
+- Includes a retry action where applicable
+
+---
+
+## 8. Design Notes
+
+- Visual polish is secondary to structural clarity.
+- Layout consistency and predictable spacing are prioritized to support straightforward frontend implementation.
+- The included UI screenshots represent implementation-ready screen layouts and should be treated as the primary visual reference.
