@@ -103,19 +103,95 @@ Each candidate card contains the following elements:
 ### Loading State
 - Skeleton cards displayed in the same grid layout as results
 - Prevents layout shift when data loads
+- Circular shimmer placeholder for avatar, rectangular bars for name/bio/metadata
+- See: `loading-skeleton-state.png`
 
 ### Empty State
 - Centered message in the results area indicating no matching developers
-- Example: `No developers found for the current filters`
+- Magnifying glass icon with X overlay to visually communicate "no results"
+- Heading: `No developers found`
+- Subtext: `Try adjusting your search query or filters to find more candidates`
+- Action: `Clear all filters` button (outline style)
+- See: `empty-state.png`
 
 ### Error State
 - Inline error message displayed in the results area
-- Includes a retry action where applicable
+- Warning triangle icon in red/orange
+- Heading: `Something went wrong`
+- Subtext explaining possible causes (network issue, rate limit exceeded)
+- Actions: `Try again` (solid button) and `Check API status` (outline button)
+- Rate limit indicator shows "API limit reached" with red dot when rate-limited
+- See: `error-state.png`
 
 ---
 
-## 8. Design Notes
+## 8. Developer Profile Detail View
+
+When a user clicks on a candidate card, they navigate to a full-width profile detail page.
+
+- No left sidebar filter panel — full-width layout
+- Top section:
+  - Large avatar (80px), name, username
+  - GitScout Score badge (circular, prominent)
+  - Action buttons: `Add to Shortlist`, `View on GitHub`
+- Stats bar: 4 metric cards (Repositories, Followers, Following, Joined date)
+- Bio section with location and personal website link
+- Top Languages: Horizontal bar chart showing language distribution with percentages
+- Popular Repositories: 2x2 grid of repo cards (name, description, stars, forks, language)
+- Contribution Activity: GitHub-style contribution heatmap grid with yearly summary
+- See: `developer-profile-detail.png`
+
+---
+
+## 9. Shortlists Page
+
+Accessible via the `Shortlists` navigation link. Full-width layout (no sidebar).
+
+- Page heading: `Your Shortlists` with `+ Create New Shortlist` button
+- Shortlist cards displayed in a vertical stack:
+  - Shortlist name with color-coded dot indicator
+  - Candidate count and creation date
+  - Overlapping avatar previews of saved candidates
+  - Technology/skill tags associated with the shortlist
+  - More options menu (`...` button)
+- See: `shortlists-page.png`
+
+---
+
+## 10. Mobile Responsive Layout
+
+For viewports below ~768px:
+
+- Navigation bar collapses: logo on left, hamburger menu icon on right
+- Nav links and API indicator hidden behind hamburger menu
+- Search bar is full-width below the nav
+- Filter panel replaced by horizontal scrolling filter chips/pills (e.g. `Language: Any`, `Location`, `Followers`, `Sort: Best Match`)
+- Results switch to single-column stacked cards (full width)
+- Card layout compresses: avatar + name + score on one row, bio below, metadata + tags below
+- `Load more` button spans full width
+- See: `mobile-responsive-view.png`
+
+---
+
+## 11. Design Notes
 
 - Visual polish is secondary to structural clarity.
 - Layout consistency and predictable spacing are prioritized to support straightforward frontend implementation.
 - The included UI screenshots represent implementation-ready screen layouts and should be treated as the primary visual reference.
+
+---
+
+## 12. Screenshot Reference Index
+
+| File | Description |
+|------|-------------|
+| `nav-wireframe.png` | Global navigation bar wireframe |
+| `rate-limit-states.png` | API rate limit indicator states (320, 80, limit reached) |
+| `search-page-layout.png` | Full search page with filter panel and list results |
+| `search-results-layout.png` | Grid-based search results with score badges and pagination |
+| `loading-skeleton-state.png` | Loading/skeleton placeholder state |
+| `empty-state.png` | No results found empty state |
+| `error-state.png` | Error state with retry actions |
+| `developer-profile-detail.png` | Developer profile detail view |
+| `shortlists-page.png` | Shortlists management page |
+| `mobile-responsive-view.png` | Mobile responsive search layout |
