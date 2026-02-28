@@ -1,11 +1,11 @@
 // web/app/types/shortlist.ts
-import type { Candidate } from "./candidate";
 
 export type Shortlist = {
   id: string;
   name: string;
   createdAt?: string;
-  updatedAt?: string;
+  items?: ShortlistItem[];
+  [key: string]: unknown;
 };
 
 export type ShortlistCreateInput = {
@@ -13,6 +13,8 @@ export type ShortlistCreateInput = {
 };
 
 export type ShortlistItem = {
-  shortlist: Shortlist;
-  candidates: Candidate[];
+  id: string;
+  username: string;
+  addedAt?: string;
+  [key: string]: unknown;
 };

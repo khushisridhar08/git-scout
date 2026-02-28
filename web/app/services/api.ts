@@ -88,7 +88,7 @@ export async function apiFetch<T>(
 
 // Adjust these interfaces if backend response differs.
 import type { Candidate } from "@/types/candidate";
-import type { Shortlist, ShortlistCreateInput, ShortlistItem } from "@/types/shortlist";
+import type { Shortlist, ShortlistCreateInput, ShortlistItem } from "@/types";
 
 
 /**

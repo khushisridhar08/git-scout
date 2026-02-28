@@ -1,6 +1,6 @@
 // web/app/hooks/useSearch.ts
 import { useQuery } from "@tanstack/react-query";
-import { searchCandidates } from "@/app/services/api";
+import { searchCandidates } from "@/services/api";
 
 export function useSearchCandidates(params: Record<string, any>) {
   // Make queryKey deterministic
@@ -14,3 +14,5 @@ export function useSearchCandidates(params: Record<string, any>) {
   });
 }
 
+// Default export for backward-compatible import as `useSearch`
+export default useSearchCandidates;
