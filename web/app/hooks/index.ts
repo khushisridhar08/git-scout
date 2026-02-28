@@ -3,3 +3,6 @@
 
 export * from './useHasMounted'
 export * from './useIsUserAgent'
+export * from "./useSearch";
+export * from "./useCandidate";
+export * from "./useShortlists";
