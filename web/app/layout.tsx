@@ -5,6 +5,7 @@ import { APP_CONFIG } from "@/config"
 import type { Metadata } from "next"
 import { GeistSans, GeistMono } from "@/fonts/fonts"
 import { Toaster } from "@/components/toasts/Toaster"
+import { QueryProvider } from "@/providers/QueryProvider"
 
 export const metadata: Metadata = {
 	title: APP_CONFIG.NAME,
@@ -17,10 +18,15 @@ export default function RootLayout({
 	children: React.ReactNode
 }) {
 	return (
-		<html lang="en" className={cn(GeistSans.variable, GeistMono.variable)}>
+		<html
+			lang="en"
+			className={cn("dark", GeistSans.variable, GeistMono.variable)}
+		>
 			<body className="font-sans antialiased bg-background text-foreground">
-				{children}
-				<Toaster />
+				<QueryProvider>
+					{children}
+					<Toaster />
+				</QueryProvider>
 			</body>
 		</html>
 	)
