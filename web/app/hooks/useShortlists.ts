@@ -7,7 +7,7 @@ import {
   getShortlist,
   getShortlists,
   removeCandidateFromShortlist,
-} from "@/app/services/api";
+} from "@/app/services/api"; // keep your existing path
 
 export function useShortlists() {
   return useQuery({
@@ -51,6 +51,21 @@ export function useAddCandidateToShortlist() {
   return useMutation({
     mutationFn: ({ id, username }: { id: string; username: string }) =>
       addCandidateToShortlist(id, username),
-    onSuccess
-});
+    onSuccess: async (_data, vars) => {
+      await qc.invalidateQueries({ queryKey: ["shortlists"] });
+      await qc.invalidateQueries({ queryKey: ["shortlist", vars.id] });
+    },
+  });
+}
+
+export function useRemoveCandidateFromShortlist() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, username }: { id: string; username: string }) =>
+      removeCandidateFromShortlist(id, username),
+    onSuccess: async (_data, vars) => {
+      await qc.invalidateQueries({ queryKey: ["shortlists"] });
+      await qc.invalidateQueries({ queryKey: ["shortlist", vars.id] });
+    },
+  });
 }
