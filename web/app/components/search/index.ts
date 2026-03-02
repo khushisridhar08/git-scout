@@ -1,5 +1,5 @@
 export { SearchBar } from "./SearchBar"
-export { FilterPanel } from "./FilterPanel"
+export { default as FilterPanel } from "./FilterPanel"
 export { DeveloperCard } from "./DeveloperCard"
 export { DeveloperCardSkeleton } from "./DeveloperCardSkeleton"
 export { EmptyState } from "./EmptyState"
