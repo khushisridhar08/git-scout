@@ -1,20 +1,23 @@
-// web/app/types/shortlist.ts
-
-export type Shortlist = {
+export type ShortlistSummary = {
   id: string;
   name: string;
   createdAt?: string;
-  items?: ShortlistItem[];
-  [key: string]: unknown;
+  candidateCount?: number;
 };
 
-export type ShortlistCreateInput = {
-  name: string;
-};
-
-export type ShortlistItem = {
-  id: string;
+export type Candidate = {
   username: string;
-  addedAt?: string;
-  [key: string]: unknown;
+  name?: string;
+  score?: number;
+  repos?: number;
+  followers?: number;
+  topLanguage?: string;
+  language?: string;
+};
+
+export type ShortlistDetail = {
+  id: string;
+  name: string;
+  createdAt?: string;
+  candidates: Candidate[];
 };
