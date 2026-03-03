@@ -21,3 +21,9 @@ export type ShortlistDetail = {
   createdAt?: string;
   candidates: Candidate[];
 };
+
+export type ShortlistCreateInput = {
+  name: string;
+};
+
+export type ShortlistItem = ShortlistDetail;
