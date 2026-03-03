@@ -11,8 +11,15 @@ type NavigationProps = {
 	rateLimit?: { remaining: number | null; limit: number | null }
 }
 
-const NAV_LINKS = [
-	{ href: "/search", label: "Search", icon: SearchIcon },
+type NavLink = {
+	href: string
+	label: string
+	icon: ({ className }: { className?: string }) => React.ReactNode
+	exact?: boolean
+}
+
+const NAV_LINKS: NavLink[] = [
+	{ href: "/", label: "Search", icon: SearchIcon, exact: true },
 	{ href: "/shortlists", label: "Shortlists", icon: BookmarkIcon },
 	{ href: "/demo", label: "Demo", icon: DemoIcon },
 ]
@@ -39,8 +46,10 @@ export default function Navigation({
 						GitScout
 					</Link>
 					<div className="hidden items-center gap-1 md:flex">
-						{NAV_LINKS.map((link) => {
-							const isActive = pathname?.startsWith(link.href)
+					{NAV_LINKS.map((link) => {
+						const isActive = link.exact
+							? pathname === link.href
+							: pathname?.startsWith(link.href)
 							return (
 								<Link
 									key={link.href}
