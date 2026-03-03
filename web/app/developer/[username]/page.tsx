@@ -4,67 +4,13 @@ import { use } from "react"
 import Link from "next/link"
 import Navigation from "@/components/Navigation"
 import { ScoreBadge } from "@/components/ScoreBadge"
-
-const MOCK_PROFILE = {
-	login: "elenarodr",
-	name: "Elena Rodriguez",
-	avatar_url: "",
-	bio: "Senior Frontend Engineer specializing in React, Next.js, and complex interactive UIs. Open source contributor to UI libraries and design systems.",
-	location: "San Francisco, CA",
-	blog: "elenarodriguez.dev",
-	public_repos: 128,
-	followers: 4200,
-	following: 892,
-	created_at: "2018-03-15T00:00:00Z",
-	gitscout_score: 94,
-	languages: [
-		{ name: "JavaScript", percentage: 45, color: "bg-yellow-500" },
-		{ name: "TypeScript", percentage: 35, color: "bg-blue-500" },
-		{ name: "CSS", percentage: 12, color: "bg-pink-500" },
-		{ name: "HTML", percentage: 8, color: "bg-red-500" },
-	],
-	repos: [
-		{
-			name: "react-design-system",
-			description: "A comprehensive React component library.",
-			stars: 45000,
-			forks: 20,
-			language: "JavaScript",
-			languageColor: "bg-yellow-500",
-		},
-		{
-			name: "nextjs-dashboard",
-			description: "Admin dashboard template.",
-			stars: 43000,
-			forks: 22,
-			language: "TypeScript",
-			languageColor: "bg-blue-500",
-		},
-		{
-			name: "css-utilities",
-			description: "Lightweight CSS utility framework.",
-			stars: 130,
-			forks: 13,
-			language: "TypeScript",
-			languageColor: "bg-blue-500",
-		},
-		{
-			name: "nextjs-repo",
-			description: "Admin dashboard template.",
-			stars: 138,
-			forks: 30,
-			language: "TypeScript",
-			languageColor: "bg-blue-500",
-		},
-	],
-	contributionsLastYear: 1247,
-}
+import { getProfileByLogin, MOCK_PROFILES } from "@/lib/mock-data"
 
 export default function DeveloperProfilePage({
 	params,
 }: { params: Promise<{ username: string }> }) {
 	const { username } = use(params)
-	const profile = MOCK_PROFILE
+	const profile = getProfileByLogin(username) ?? MOCK_PROFILES[0]
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -74,7 +20,15 @@ export default function DeveloperProfilePage({
 				{/* Header */}
 				<div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
 					<div className="flex items-start gap-5">
-						<div className="h-20 w-20 shrink-0 rounded-full bg-muted" />
+						{profile.avatar_url ? (
+							<img
+								src={profile.avatar_url}
+								alt={profile.name}
+								className="h-20 w-20 shrink-0 rounded-full bg-muted"
+							/>
+						) : (
+							<div className="h-20 w-20 shrink-0 rounded-full bg-muted" />
+						)}
 						<div>
 							<h1 className="text-2xl font-bold text-foreground">
 								{profile.name}
@@ -241,7 +195,7 @@ export default function DeveloperProfilePage({
 				{/* Back link */}
 				<div className="mt-10">
 					<Link
-						href="/search"
+						href="/"
 						className="text-sm text-muted-foreground transition-colors hover:text-foreground"
 					>
 						&larr; Back to search
