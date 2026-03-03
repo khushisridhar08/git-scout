@@ -1,268 +1,366 @@
 "use client"
 
-import { Button, Text } from "@/components"
-import { Check, Home as HomeIcon, Warning, WifiOff } from "@/components/icons/generated"
-import { toast } from "sonner"
+import { useState, useEffect, useCallback } from "react"
+import Navigation from "@/components/Navigation"
+import { cn } from "@/utils/cn"
+
+type Screen = {
+	id: string
+	src: string
+	title: string
+	description: string
+	category: Category
+}
+
+type Category = "navigation" | "search" | "states" | "pages" | "responsive"
+
+const CATEGORIES: { id: Category; label: string }[] = [
+	{ id: "navigation", label: "Navigation" },
+	{ id: "search", label: "Search" },
+	{ id: "states", label: "UI States" },
+	{ id: "pages", label: "Pages" },
+	{ id: "responsive", label: "Responsive" },
+]
+
+const SCREENS: Screen[] = [
+	{
+		id: "nav-wireframe",
+		src: "/demo/nav-wireframe.png",
+		title: "Navigation Bar",
+		description:
+			"Global top navigation with GitScout logo, Search and Shortlists links, API rate limit indicator, and theme toggle.",
+		category: "navigation",
+	},
+	{
+		id: "rate-limit-states",
+		src: "/demo/rate-limit-states.png",
+		title: "Rate Limit States",
+		description:
+			"Three visual states for the API rate limit badge: healthy (320 remaining), warning (80 remaining), and exhausted (limit reached).",
+		category: "navigation",
+	},
+	{
+		id: "search-page-layout",
+		src: "/demo/search-page-layout.png",
+		title: "Search Page",
+		description:
+			"Primary search view with left filter panel (language, location, followers, repos, sort), search bar, results summary, and developer cards in a list layout.",
+		category: "search",
+	},
+	{
+		id: "search-results-layout",
+		src: "/demo/search-results-layout.png",
+		title: "Search Results Grid",
+		description:
+			"Alternative grid layout with 4-column cards showing avatar, name, GitScout score badge, repo/follower counts, and skill tags. Includes pagination.",
+		category: "search",
+	},
+	{
+		id: "loading-skeleton-state",
+		src: "/demo/loading-skeleton-state.png",
+		title: "Loading State",
+		description:
+			"Skeleton placeholders displayed while search results are fetching. Maintains the same layout structure to prevent layout shift.",
+		category: "states",
+	},
+	{
+		id: "empty-state",
+		src: "/demo/empty-state.png",
+		title: "Empty State",
+		description:
+			'Shown when a search returns zero results. Magnifying glass icon with "No developers found" message and a clear filters action.',
+		category: "states",
+	},
+	{
+		id: "error-state",
+		src: "/demo/error-state.png",
+		title: "Error State",
+		description:
+			'Displayed on API or network failure. Warning icon with "Something went wrong" message, retry button, and link to check API status.',
+		category: "states",
+	},
+	{
+		id: "developer-profile-detail",
+		src: "/demo/developer-profile-detail.png",
+		title: "Developer Profile",
+		description:
+			"Full-width profile detail page with avatar, GitScout score, stats bar, bio, top languages chart, popular repositories grid, and contribution heatmap.",
+		category: "pages",
+	},
+	{
+		id: "shortlists-page",
+		src: "/demo/shortlists-page.png",
+		title: "Shortlists",
+		description:
+			"Shortlist management page showing saved developer lists with candidate counts, creation dates, avatar previews, and technology tags.",
+		category: "pages",
+	},
+	{
+		id: "mobile-responsive-view",
+		src: "/demo/mobile-responsive-view.png",
+		title: "Mobile Layout",
+		description:
+			"Responsive mobile view with hamburger navigation, full-width search, horizontal filter chips, and single-column stacked cards.",
+		category: "responsive",
+	},
+]
 
 export default function Home() {
+	const [activeCategory, setActiveCategory] = useState<Category | "all">("all")
+	const [lightbox, setLightbox] = useState<Screen | null>(null)
+
+	const filtered =
+		activeCategory === "all"
+			? SCREENS
+			: SCREENS.filter((s) => s.category === activeCategory)
+
+	const lightboxIndex = lightbox
+		? filtered.findIndex((s) => s.id === lightbox.id)
+		: -1
+
+	const navigateLightbox = useCallback(
+		(direction: -1 | 1) => {
+			if (lightboxIndex < 0) return
+			const next = lightboxIndex + direction
+			if (next >= 0 && next < filtered.length) {
+				setLightbox(filtered[next])
+			}
+		},
+		[lightboxIndex, filtered],
+	)
+
+	useEffect(() => {
+		if (!lightbox) return
+		function handleKey(e: KeyboardEvent) {
+			if (e.key === "Escape") setLightbox(null)
+			if (e.key === "ArrowRight") navigateLightbox(1)
+			if (e.key === "ArrowLeft") navigateLightbox(-1)
+		}
+		document.addEventListener("keydown", handleKey)
+		return () => document.removeEventListener("keydown", handleKey)
+	}, [lightbox, navigateLightbox])
+
 	return (
-		<main className="min-h-dvh bg-background">
-			{/* Header */}
-			<header className="border-b border-border">
-				<div className="container mx-auto px-6 py-4 flex items-center justify-between">
-					<div className="flex items-center gap-2">
-						<div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
-							<span className="text-background font-bold text-sm">X</span>
-						</div>
-						<span className="font-semibold">XORS Starter</span>
-					</div>
-					<nav className="flex items-center gap-6">
-						<a href="#components" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-							Components
-						</a>
-						<a href="#typography" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-							Typography
-						</a>
-						<a href="https://github.com" target="_blank" rel="noopener" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-							GitHub
-						</a>
-					</nav>
+		<div className="min-h-screen bg-background">
+			<Navigation />
+
+			<div className="mx-auto max-w-7xl px-6 pt-24 pb-16">
+				<div className="max-w-2xl">
+					<h1 className="text-3xl font-bold tracking-tight text-foreground">
+						Design Prototypes
+					</h1>
+					<p className="mt-2 text-muted-foreground">
+						Interactive walkthrough of the GitScout UI design mockups. Click any
+						screen to view fullscreen. Navigate with arrow keys.
+					</p>
 				</div>
-			</header>
 
-			{/* Hero */}
-			<section className="container mx-auto px-6 py-24 text-center">
-				<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-muted text-sm text-muted-foreground mb-6">
-					<span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-					Next.js + Tailwind + Elysia
+				{/* Category filter tabs */}
+				<div className="mt-8 flex gap-1 overflow-x-auto no-scrollbar border-b border-border/50 pb-px">
+					<TabButton
+						active={activeCategory === "all"}
+						onClick={() => setActiveCategory("all")}
+					>
+						All
+					</TabButton>
+					{CATEGORIES.map((cat) => (
+						<TabButton
+							key={cat.id}
+							active={activeCategory === cat.id}
+							onClick={() => setActiveCategory(cat.id)}
+						>
+							{cat.label}
+						</TabButton>
+					))}
 				</div>
-				<h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-4">
-					Build faster with
-					<br />
-					<span className="bg-gradient-to-r from-foreground via-muted-foreground to-foreground bg-clip-text text-transparent">
-						modern foundations
-					</span>
-				</h1>
-				<p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-					A full-stack monorepo starter with Next.js frontend and Elysia backend.
-					Batteries included for rapid development.
-				</p>
-			</section>
 
-			{/* Component Showcase */}
-			<section id="components" className="border-t border-border bg-muted/30">
-				<div className="container mx-auto px-6 py-16">
-					<div className="text-center mb-12">
-						<h2 className="text-3xl font-bold mb-2">Component Library</h2>
-						<p className="text-muted-foreground">Pre-built components ready for use</p>
-					</div>
-
-					<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-						{/* Buttons Card */}
-						<ComponentCard title="Buttons" description="Multiple variants and sizes">
-							<div className="flex flex-wrap gap-3">
-								<Button variant="default">Default</Button>
-								<Button variant="solid">Solid</Button>
-								<Button variant="outline">Outline</Button>
-								<Button variant="faded">Faded</Button>
-							</div>
-							<div className="flex flex-wrap gap-3 mt-3">
-								<Button size="small">Small</Button>
-								<Button size="default">Default</Button>
-								<Button size="large">Large</Button>
-							</div>
-						</ComponentCard>
-
-						{/* Icons Card */}
-						<ComponentCard title="Icons" description="SVG icons as React components">
-							<div className="flex items-center gap-4">
-								<IconDisplay icon={<HomeIcon className="w-5 h-5" />} label="Home" />
-								<IconDisplay icon={<Check className="w-5 h-5" />} label="Check" />
-								<IconDisplay icon={<Warning className="w-5 h-5" />} label="Warning" />
-								<IconDisplay icon={<WifiOff className="w-5 h-5" />} label="WifiOff" />
-							</div>
-							<p className="text-xs text-muted-foreground mt-3">
-								Drop SVGs in <code className="bg-muted px-1 rounded">/icon-svg</code> and run <code className="bg-muted px-1 rounded">bun build-icons</code>
-							</p>
-						</ComponentCard>
-
-						{/* Toasts Card */}
-						<ComponentCard title="Toasts" description="Notification system with Sonner">
-							<div className="flex flex-wrap gap-2">
-								<button
-									onClick={() => toast.success("Action completed!", { description: "Your changes have been saved." })}
-									className="px-3 py-1.5 text-xs rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
-								>
-									Success
-								</button>
-								<button
-									onClick={() => toast.error("Something went wrong", { description: "Please try again later." })}
-									className="px-3 py-1.5 text-xs rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
-								>
-									Error
-								</button>
-								<button
-									onClick={() => toast.warning("Connection unstable", { description: "Check your network." })}
-									className="px-3 py-1.5 text-xs rounded-md bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition-colors"
-								>
-									Warning
-								</button>
-								<button
-									onClick={() => toast("Default notification", { description: "This is a message." })}
-									className="px-3 py-1.5 text-xs rounded-md bg-muted text-foreground hover:bg-muted/80 transition-colors"
-								>
-									Default
-								</button>
-							</div>
-						</ComponentCard>
-
-						{/* Colors Card */}
-						<ComponentCard title="Colors" description="Semantic color tokens">
-							<div className="grid grid-cols-4 gap-2">
-								<ColorSwatch color="bg-background" label="BG" border />
-								<ColorSwatch color="bg-foreground" label="FG" />
-								<ColorSwatch color="bg-primary" label="Primary" />
-								<ColorSwatch color="bg-secondary" label="Secondary" />
-								<ColorSwatch color="bg-muted" label="Muted" />
-								<ColorSwatch color="bg-accent" label="Accent" />
-								<ColorSwatch color="bg-destructive" label="Destructive" />
-								<ColorSwatch color="bg-border" label="Border" />
-							</div>
-						</ComponentCard>
-
-						{/* Spacing Card */}
-						<ComponentCard title="Spacing" description="Consistent spacing scale">
-							<div className="flex items-end gap-1">
-								{[1, 2, 3, 4, 6, 8, 12, 16].map((size) => (
-									<div key={size} className="flex flex-col items-center gap-1">
-										<div
-											className="bg-foreground/20 rounded"
-											style={{ width: size * 4, height: size * 4 }}
-										/>
-										<span className="text-[10px] text-muted-foreground">{size}</span>
+				{/* Gallery grid */}
+				<div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+					{filtered.map((screen) => (
+						<button
+							key={screen.id}
+							type="button"
+							onClick={() => setLightbox(screen)}
+							className="group text-left"
+						>
+							<div className="overflow-hidden rounded-lg border border-border/50 bg-card transition-all group-hover:border-border group-hover:ring-1 group-hover:ring-ring/20">
+								<div className="relative aspect-video bg-muted/30">
+									<img
+										src={screen.src}
+										alt={screen.title}
+										className="h-full w-full object-cover object-top"
+									/>
+									<div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/30 group-hover:opacity-100">
+										<ExpandIcon className="h-8 w-8 text-white drop-shadow-lg" />
 									</div>
-								))}
+								</div>
 							</div>
-						</ComponentCard>
-
-						{/* Radius Card */}
-						<ComponentCard title="Border Radius" description="Rounded corner tokens">
-							<div className="flex items-center gap-3">
-								<div className="w-12 h-12 bg-muted border border-border rounded-sm flex items-center justify-center text-xs text-muted-foreground">sm</div>
-								<div className="w-12 h-12 bg-muted border border-border rounded-md flex items-center justify-center text-xs text-muted-foreground">md</div>
-								<div className="w-12 h-12 bg-muted border border-border rounded-lg flex items-center justify-center text-xs text-muted-foreground">lg</div>
-								<div className="w-12 h-12 bg-muted border border-border rounded-xl flex items-center justify-center text-xs text-muted-foreground">xl</div>
-								<div className="w-12 h-12 bg-muted border border-border rounded-full flex items-center justify-center text-xs text-muted-foreground">full</div>
-							</div>
-						</ComponentCard>
-					</div>
+							<h3 className="mt-3 text-sm font-medium text-foreground">
+								{screen.title}
+							</h3>
+							<p className="mt-0.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">
+								{screen.description}
+							</p>
+						</button>
+					))}
 				</div>
-			</section>
 
-			{/* Typography Section */}
-			<section id="typography" className="border-t border-border">
-				<div className="container mx-auto px-6 py-16">
-					<div className="text-center mb-12">
-						<h2 className="text-3xl font-bold mb-2">Typography</h2>
-						<p className="text-muted-foreground">Text component with semantic variants</p>
-					</div>
+				<p className="mt-8 text-center text-xs text-muted-foreground">
+					{filtered.length} of {SCREENS.length} screens
+				</p>
+			</div>
 
-					<div className="max-w-3xl mx-auto space-y-8">
-						{/* Headings */}
-						<div className="space-y-4">
-							<h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Headings</h3>
-							<div className="space-y-3 p-6 rounded-lg border border-border bg-card">
-								<Text variant="heading-xl">Heading XL</Text>
-								<Text variant="heading-lg">Heading LG</Text>
-								<Text variant="heading-md">Heading MD</Text>
-								<Text variant="heading-sm">Heading SM</Text>
-								<Text variant="heading-xs">Heading XS</Text>
-								<Text variant="heading-xxs">Heading XXS</Text>
-							</div>
-						</div>
-
-						{/* Paragraphs */}
-						<div className="space-y-4">
-							<h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Paragraphs</h3>
-							<div className="space-y-3 p-6 rounded-lg border border-border bg-card">
-								<Text variant="paragraph-xxl">Paragraph XXL - Large display text</Text>
-								<Text variant="paragraph-xl">Paragraph XL - Subheading text</Text>
-								<Text variant="paragraph-lg">Paragraph LG - Lead paragraph text</Text>
-								<Text variant="paragraph-md">Paragraph MD - Body text for content</Text>
-								<Text variant="paragraph-sm">Paragraph SM - Secondary text and captions</Text>
-								<Text variant="paragraph-xs">Paragraph XS - Fine print and labels</Text>
-							</div>
-						</div>
-
-						{/* Accent/Mono */}
-						<div className="space-y-4">
-							<h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Accent (Monospace)</h3>
-							<div className="space-y-3 p-6 rounded-lg border border-border bg-card">
-								<Text variant="accent-lg">accent-lg: Code blocks and technical</Text>
-								<Text variant="accent-md">accent-md: Inline code and values</Text>
-								<Text variant="accent-sm">accent-sm: Timestamps and metadata</Text>
-								<Text variant="accent-xs">accent-xs: Fine technical details</Text>
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			{/* Footer */}
-			<footer className="border-t border-border bg-muted/30">
-				<div className="container mx-auto px-6 py-8">
-					<div className="flex flex-col md:flex-row items-center justify-between gap-4">
-						<p className="text-sm text-muted-foreground">
-							Built with Next.js, Tailwind CSS, and Elysia
-						</p>
-						<div className="flex items-center gap-4 text-sm text-muted-foreground">
-							<a href="#" className="hover:text-foreground transition-colors">Documentation</a>
-							<a href="#" className="hover:text-foreground transition-colors">GitHub</a>
-							<a href="#" className="hover:text-foreground transition-colors">Discord</a>
-						</div>
-					</div>
-				</div>
-			</footer>
-		</main>
+			{/* Lightbox overlay */}
+			{lightbox && (
+				<Lightbox
+					screen={lightbox}
+					index={lightboxIndex}
+					total={filtered.length}
+					onClose={() => setLightbox(null)}
+					onPrev={() => navigateLightbox(-1)}
+					onNext={() => navigateLightbox(1)}
+				/>
+			)}
+		</div>
 	)
 }
 
-/* Helper Components */
-
-function ComponentCard({
-	title,
-	description,
+function TabButton({
+	active,
+	onClick,
 	children,
 }: {
-	title: string
-	description: string
+	active: boolean
+	onClick: () => void
 	children: React.ReactNode
 }) {
 	return (
-		<div className="rounded-xl border border-border bg-card p-6">
-			<h3 className="font-semibold mb-1">{title}</h3>
-			<p className="text-sm text-muted-foreground mb-4">{description}</p>
+		<button
+			type="button"
+			onClick={onClick}
+			className={cn(
+				"shrink-0 border-b-2 px-4 py-2 text-sm transition-colors",
+				active
+					? "border-foreground text-foreground"
+					: "border-transparent text-muted-foreground hover:text-foreground",
+			)}
+		>
 			{children}
-		</div>
+		</button>
 	)
 }
 
-function IconDisplay({ icon, label }: { icon: React.ReactNode; label: string }) {
+function Lightbox({
+	screen,
+	index,
+	total,
+	onClose,
+	onPrev,
+	onNext,
+}: {
+	screen: Screen
+	index: number
+	total: number
+	onClose: () => void
+	onPrev: () => void
+	onNext: () => void
+}) {
+	const hasPrev = index > 0
+	const hasNext = index < total - 1
+
 	return (
-		<div className="flex flex-col items-center gap-1">
-			<div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-				{icon}
+		<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm">
+			<button
+				type="button"
+				onClick={onClose}
+				className="absolute top-4 right-4 z-10 rounded-full bg-white/10 p-2 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+				aria-label="Close"
+			>
+				<svg
+					className="h-5 w-5"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+				>
+					<line x1="18" y1="6" x2="6" y2="18" />
+					<line x1="6" y1="6" x2="18" y2="18" />
+				</svg>
+			</button>
+
+			{hasPrev && (
+				<button
+					type="button"
+					onClick={onPrev}
+					className="absolute left-4 z-10 rounded-full bg-white/10 p-3 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+					aria-label="Previous"
+				>
+					<svg
+						className="h-5 w-5"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+					>
+						<polyline points="15 18 9 12 15 6" />
+					</svg>
+				</button>
+			)}
+
+			{hasNext && (
+				<button
+					type="button"
+					onClick={onNext}
+					className="absolute right-4 z-10 rounded-full bg-white/10 p-3 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+					aria-label="Next"
+				>
+					<svg
+						className="h-5 w-5"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+					>
+						<polyline points="9 18 15 12 9 6" />
+					</svg>
+				</button>
+			)}
+
+			<div className="flex max-h-[90vh] max-w-[90vw] flex-col items-center">
+				<img
+					src={screen.src}
+					alt={screen.title}
+					className="max-h-[75vh] rounded-lg object-contain shadow-2xl"
+				/>
+				<div className="mt-4 text-center">
+					<h2 className="text-lg font-semibold text-white">{screen.title}</h2>
+					<p className="mt-1 max-w-xl text-sm text-white/60">
+						{screen.description}
+					</p>
+					<p className="mt-2 text-xs text-white/40">
+						{index + 1} / {total} &middot; Arrow keys to navigate, Esc to close
+					</p>
+				</div>
 			</div>
-			<span className="text-xs text-muted-foreground">{label}</span>
 		</div>
 	)
 }
 
-function ColorSwatch({ color, label, border }: { color: string; label: string; border?: boolean }) {
+function ExpandIcon({ className }: { className?: string }) {
 	return (
-		<div className="flex flex-col items-center gap-1">
-			<div className={`w-10 h-10 rounded-lg ${color} ${border ? "border border-border" : ""}`} />
-			<span className="text-[10px] text-muted-foreground">{label}</span>
-		</div>
+		<svg
+			className={className}
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+		>
+			<polyline points="15 3 21 3 21 9" />
+			<polyline points="9 21 3 21 3 15" />
+			<line x1="21" y1="3" x2="14" y2="10" />
+			<line x1="3" y1="21" x2="10" y2="14" />
+		</svg>
 	)
 }
