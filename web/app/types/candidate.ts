@@ -2,7 +2,7 @@
 
 // Keep this minimal + extensible. You can expand once backend schema stabilizes.
 export type Candidate = {
-  username: string;           // GitHub login
+  username: string;
   name?: string;
   avatarUrl?: string;
   location?: string;
