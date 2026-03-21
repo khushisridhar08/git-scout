@@ -11,7 +11,7 @@ import {
 	EmptyState,
 	ErrorState,
 } from "@/components/search"
-import { searchCandidates } from "@/lib/api"
+import { searchCandidates, ApiError } from "@/services/api"
 import type { SearchFilters } from "@/types/search"
 
 const DEFAULT_FILTERS: SearchFilters = {
@@ -44,14 +44,21 @@ export default function SearchPage() {
 		setSearchInput("")
 	}, [])
 
-	const rateLimit = data?.rate_limit
-		? {
-				remaining: Number(data.rate_limit.remaining),
-				limit: Number(data.rate_limit.limit),
-			}
-		: undefined
+	let errorMessage = "Something went wrong while fetching candidates."
 
-	const totalCount = data?.total_count ?? 0
+	if (error instanceof ApiError) {
+		if (error.status === 403) {
+			errorMessage = "GitHub API rate limit exceeded. Please try again later."
+		} else if (error.status >= 500) {
+			errorMessage = "Server error while fetching candidates."
+		} else {
+			errorMessage = error.message
+		}
+	} else if (error instanceof Error) {
+		errorMessage = error.message
+	}
+
+	const totalCount = data?.totalCount ?? 0
 	const candidates = data?.candidates ?? []
 	const page = filters.page ?? 1
 	const perPage = filters.per_page ?? 10
@@ -60,10 +67,9 @@ export default function SearchPage() {
 
 	return (
 		<div className="min-h-screen bg-background">
-			<Navigation rateLimit={rateLimit} />
+			<Navigation />
 
 			<div className="mx-auto flex max-w-7xl gap-8 px-6 pt-24 pb-12">
-				{/* Filter panel — desktop only */}
 				<FilterPanel
 					filters={filters}
 					onChange={handleFilterChange}
@@ -71,7 +77,6 @@ export default function SearchPage() {
 					className="hidden lg:block"
 				/>
 
-				{/* Main content */}
 				<main className="min-w-0 flex-1">
 					<SearchBar
 						value={searchInput}
@@ -79,7 +84,6 @@ export default function SearchPage() {
 						onSubmit={handleSearch}
 					/>
 
-					{/* Mobile filter chips */}
 					<div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar lg:hidden">
 						{["Language: Any", "Location", "Followers", `Sort: ${filters.sort || "Best Match"}`].map(
 							(chip) => (
@@ -93,7 +97,6 @@ export default function SearchPage() {
 						)}
 					</div>
 
-					{/* Results header */}
 					{filters.q && (
 						<div className="mt-6 flex items-baseline justify-between">
 							<h1 className="text-lg font-semibold text-foreground">
@@ -107,7 +110,6 @@ export default function SearchPage() {
 						</div>
 					)}
 
-					{/* Results body */}
 					<div className="mt-4 space-y-4">
 						{isLoading && (
 							<>
@@ -119,7 +121,7 @@ export default function SearchPage() {
 
 						{isError && (
 							<ErrorState
-								message={(error as Error)?.message}
+								message={errorMessage}
 								onRetry={() => refetch()}
 							/>
 						)}
@@ -132,14 +134,13 @@ export default function SearchPage() {
 							!isError &&
 							candidates.map((candidate) => (
 								<DeveloperCard
-									key={candidate.id}
+									key={candidate.username}
 									candidate={candidate}
 									variant="list"
 								/>
 							))}
 					</div>
 
-					{/* Load more */}
 					{!isLoading && candidates.length > 0 && candidates.length < totalCount && (
 						<div className="mt-8 flex justify-center">
 							<button
@@ -157,7 +158,6 @@ export default function SearchPage() {
 						</div>
 					)}
 
-					{/* Initial state — no search yet */}
 					{!filters.q && !isLoading && (
 						<div className="flex flex-col items-center justify-center py-20">
 							<svg

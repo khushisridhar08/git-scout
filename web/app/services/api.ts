@@ -1,144 +1,157 @@
-// web/app/services/api.ts
-const DEFAULT_BASE_URL = "http://localhost:3001";
+import type { Candidate } from "@/types/candidate";
+import type {
+  ApiCandidate,
+  ApiSearchResponse,
+  SearchResponse,
+  RateLimitInfo,
+} from "@/types/api";
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.trim() || DEFAULT_BASE_URL;
-
-type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-
-export type ApiErrorDetails = {
-  status: number;
-  message: string;
-  url: string;
-  body?: unknown;
-};
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:3001";
 
 export class ApiError extends Error {
-  public readonly details: ApiErrorDetails;
+  status: number;
+  body?: unknown;
 
-  constructor(details: ApiErrorDetails) {
-    super(details.message);
+  constructor(message: string, status: number, body?: unknown) {
+    super(message);
     this.name = "ApiError";
-    this.details = details;
+    this.status = status;
+    this.body = body;
   }
 }
 
-function buildUrl(path: string, params?: Record<string, string | number | boolean | undefined | null>) {
-  const url = new URL(path, API_BASE_URL);
-  if (params) {
-    Object.entries(params).forEach(([k, v]) => {
-      if (v === undefined || v === null) return;
-      url.searchParams.set(k, String(v));
-    });
-  }
-  return url.toString();
+// Lightweight in-memory rate limit store
+let latestRateLimit: RateLimitInfo = {
+  remaining: null,
+  limit: null,
+  resetAt: null,
+};
+
+export function getLatestRateLimit(): RateLimitInfo {
+  return latestRateLimit;
 }
 
-async function readJsonSafe(res: Response) {
-  const text = await res.text();
-  if (!text) return undefined;
-  try {
-    return JSON.parse(text);
-  } catch {
-    // if server returned non-json
-    return text;
-  }
+function updateRateLimitFromHeaders(headers: Headers): void {
+  const remaining = headers.get("x-ratelimit-remaining");
+  const limit = headers.get("x-ratelimit-limit");
+  const reset = headers.get("x-ratelimit-reset");
+
+  latestRateLimit = {
+    remaining:
+      remaining !== null && remaining !== "" && !Number.isNaN(Number(remaining))
+        ? Number(remaining)
+        : null,
+    limit:
+      limit !== null && limit !== "" && !Number.isNaN(Number(limit))
+        ? Number(limit)
+        : null,
+    resetAt:
+      reset !== null && reset !== "" && !Number.isNaN(Number(reset))
+        ? Number(reset)
+        : null,
+  };
 }
 
-export async function apiFetch<T>(
+async function request<T>(
   path: string,
-  opts?: {
-    method?: HttpMethod;
-    params?: Record<string, string | number | boolean | undefined | null>;
-    body?: unknown;
-    headers?: Record<string, string>;
-    signal?: AbortSignal;
-  }
+  options?: RequestInit & { signal?: AbortSignal }
 ): Promise<T> {
-  const url = buildUrl(path, opts?.params);
-
-  const res = await fetch(url, {
-    method: opts?.method ?? "GET",
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
     headers: {
       "Content-Type": "application/json",
-      ...(opts?.headers ?? {}),
+      ...(options?.headers ?? {}),
     },
-    body: opts?.body !== undefined ? JSON.stringify(opts.body) : undefined,
-    signal: opts?.signal,
+    signal: options?.signal,
   });
 
-  if (!res.ok) {
-    const body = await readJsonSafe(res);
-    throw new ApiError({
-      status: res.status,
-      message: `API request failed: ${res.status} ${res.statusText}`,
-      url,
-      body,
-    });
+  // Capture latest rate limit values from response headers
+  updateRateLimitFromHeaders(response.headers);
+
+  let data: unknown = null;
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    data = await response.json();
+  } else {
+    data = await response.text();
   }
 
-  // Some endpoints may return 204
-  if (res.status === 204) return undefined as T;
+  if (!response.ok) {
+    const message =
+      typeof data === "object" && data !== null && "message" in data
+        ? String((data as { message?: string }).message)
+        : `Request failed with status ${response.status}`;
 
-  const data = (await readJsonSafe(res)) as T;
-  return data;
+    throw new ApiError(message, response.status, data);
+  }
+
+  return data as T;
 }
-
-/** ---- Typed API functions (per Issue #8) ---- **/
-
-// Adjust these interfaces if backend response differs.
-import type { Candidate } from "@/types/candidate";
-import type { Shortlist, ShortlistCreateInput, ShortlistItem } from "@/types";
-
 
 /**
- * searchCandidates(params)
- * Example params might include: q, language, location, minFollowers, page, etc.
- * Keep flexible because backend may evolve.
+ * Maps backend candidate/profile response into frontend Candidate shape
  */
-export function searchCandidates(params: Record<string, string | number | boolean | undefined | null>) {
-  return apiFetch<Candidate[]>("/api/search", { params });
+function mapApiCandidateToCandidate(apiCandidate: ApiCandidate): Candidate {
+  return {
+    username: apiCandidate.login ?? "",
+    name: apiCandidate.name ?? apiCandidate.login ?? undefined,
+    avatarUrl: apiCandidate.avatar_url ?? undefined,
+    location: apiCandidate.location ?? undefined,
+    followers: apiCandidate.followers ?? 0,
+    publicRepos: apiCandidate.public_repos ?? 0,
+    totalStars: apiCandidate.total_stars ?? 0,
+    recentCommitCount: apiCandidate.recent_commit_count ?? 0,
+    languages: apiCandidate.languages ?? [],
+    score: apiCandidate.score ?? 0,
+  };
 }
 
-/** getCandidateProfile(username) */
-export function getCandidateProfile(username: string) {
-  return apiFetch<Candidate>(`/api/candidates/${encodeURIComponent(username)}`);
-}
+/**
+ * Search candidates using backend API and map raw response to frontend shape
+ */
+export async function searchCandidates(
+  params: Record<string, unknown>
+): Promise<SearchResponse> {
+  const { signal, ...rest } = params ?? {};
+  const searchParams = new URLSearchParams();
 
-/** getShortlists() */
-export function getShortlists() {
-  return apiFetch<Shortlist[]>("/api/shortlists");
-}
-
-/** createShortlist(name) */
-export function createShortlist(name: string) {
-  const payload: ShortlistCreateInput = { name };
-  return apiFetch<Shortlist>("/api/shortlists", { method: "POST", body: payload });
-}
-
-/** getShortlist(id) */
-export function getShortlist(id: string) {
-  return apiFetch<ShortlistItem>(`/api/shortlists/${encodeURIComponent(id)}`);
-}
-
-/** addCandidateToShortlist(id, username) */
-export function addCandidateToShortlist(id: string, username: string) {
-  return apiFetch<{ ok: true }>(`/api/shortlists/${encodeURIComponent(id)}/candidates`, {
-    method: "POST",
-    body: { username },
+  Object.entries(rest).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.append(key, String(value));
+    }
   });
+
+  const data = await request<ApiSearchResponse>(
+    `/search/candidates?${searchParams.toString()}`,
+    {
+      method: "GET",
+      signal: signal as AbortSignal | undefined,
+    }
+  );
+
+  return {
+    candidates: (data.items ?? []).map(mapApiCandidateToCandidate),
+    totalCount: data.total_count ?? 0,
+    incompleteResults: data.incomplete_results ?? false,
+  };
 }
 
-/** removeCandidateFromShortlist(id, username) */
-export function removeCandidateFromShortlist(id: string, username: string) {
-  return apiFetch<{ ok: true }>(`/api/shortlists/${encodeURIComponent(id)}/candidates/${encodeURIComponent(username)}`, {
-    method: "DELETE",
-  });
-}
+/**
+ * Fetch single candidate profile from backend API
+ */
+export async function getCandidateProfile(
+  username: string,
+  signal?: AbortSignal
+): Promise<Candidate> {
+  const data = await request<ApiCandidate>(
+    `/candidates/${encodeURIComponent(username)}`,
+    {
+      method: "GET",
+      signal,
+    }
+  );
 
-/** deleteShortlist(id) */
-export function deleteShortlist(id: string) {
-  return apiFetch<{ ok: true }>(`/api/shortlists/${encodeURIComponent(id)}`, {
-    method: "DELETE",
-  });
+  return mapApiCandidateToCandidate(data);
 }

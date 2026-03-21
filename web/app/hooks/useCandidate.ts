@@ -5,10 +5,9 @@ import type { Candidate } from "@/types/candidate";
 export function useCandidate(username?: string) {
   return useQuery({
     queryKey: ["candidate", username],
-    queryFn: ({ signal }): Promise<Candidate> => {
-      return getCandidateProfile(username!, signal);
-    },
-    enabled: Boolean(username),   
+    queryFn: ({ signal }): Promise<Candidate> =>
+      getCandidateProfile(username!, signal),
+    enabled: Boolean(username),
     staleTime: 30_000,
   });
 }

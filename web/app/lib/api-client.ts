@@ -1,9 +1,9 @@
 // web/app/lib/api-client.ts
 
+import type { Candidate } from "../types/candidate";
 import type {
   ApiCandidate,
   ApiSearchResponse,
-  Candidate,
   SearchResponse,
   RateLimitInfo,
 } from "../types/api";
@@ -58,10 +58,10 @@ function mapApiCandidateToCandidate(apiCandidate: ApiCandidate): Candidate {
     publicRepos: apiCandidate.public_repos ?? 0,
     publicGists: apiCandidate.public_gists ?? 0,
     score: apiCandidate.score,
-    name: apiCandidate.name ?? null,
-    bio: apiCandidate.bio ?? null,
-    location: apiCandidate.location ?? null,
-    company: apiCandidate.company ?? null,
+    name: apiCandidate.name ?? undefined,
+    bio: apiCandidate.bio ?? undefined,
+    location: apiCandidate.location ?? undefined,
+    company: apiCandidate.company ?? undefined,
   };
 }
 

@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { cn } from "@/utils/cn"
 import { ScoreBadge } from "@/components/ScoreBadge"
-import type { Candidate } from "@/types/search"
+import type { Candidate } from "@/types/candidate"
 
 type DeveloperCardProps = {
 	candidate: Candidate
@@ -27,13 +27,13 @@ export function DeveloperCard({
 	variant = "list",
 	className,
 }: DeveloperCardProps) {
-	const displayName = candidate.name || candidate.login
+	const displayName: string = candidate.name ?? candidate.username ?? "Developer"
 	const primaryLanguage = candidate.languages?.[0]
 
 	if (variant === "grid") {
 		return (
 			<Link
-				href={`/developer/${candidate.login}`}
+				href={`/developer/${candidate.username}`}
 				className={cn(
 					"group rounded-lg border border-border/50 bg-card p-5 transition-colors hover:border-border",
 					className,
@@ -42,7 +42,7 @@ export function DeveloperCard({
 				<div className="flex items-start justify-between">
 					<div className="flex items-center gap-3">
 						<img
-							src={candidate.avatar_url}
+							src={candidate.avatarUrl}
 							alt={displayName}
 							className="h-10 w-10 rounded-full bg-muted"
 						/>
@@ -51,18 +51,18 @@ export function DeveloperCard({
 								{displayName}
 							</p>
 							<p className="text-xs text-muted-foreground">
-								@{candidate.login}
+								@{candidate.username}
 							</p>
 						</div>
 					</div>
-					<ScoreBadge score={candidate.gitscout_score} />
+					<ScoreBadge score={candidate.score ?? 0} />
 				</div>
 
 				<div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-					{candidate.public_repos !== undefined && (
+					{candidate.publicRepos !== undefined && (
 						<span className="flex items-center gap-1">
 							<RepoIcon className="h-3 w-3" />
-							{candidate.public_repos} Repos
+							{candidate.publicRepos} Repos
 						</span>
 					)}
 					{candidate.followers !== undefined && (
@@ -91,7 +91,7 @@ export function DeveloperCard({
 
 	return (
 		<Link
-			href={`/developer/${candidate.login}`}
+			href={`/developer/${candidate.username}`}
 			className={cn(
 				"group rounded-lg border border-border/50 bg-card p-5 transition-colors hover:border-border",
 				className,
@@ -99,7 +99,7 @@ export function DeveloperCard({
 		>
 			<div className="flex items-start gap-4">
 				<img
-					src={candidate.avatar_url}
+					src={candidate.avatarUrl}
 					alt={displayName}
 					className="h-12 w-12 rounded-full bg-muted"
 				/>
@@ -110,10 +110,10 @@ export function DeveloperCard({
 								{displayName}
 							</span>
 							<span className="ml-2 text-xs text-muted-foreground">
-								@{candidate.login}
+								@{candidate.username}
 							</span>
 						</div>
-						<ScoreBadge score={candidate.gitscout_score} />
+						<ScoreBadge score={candidate.score ?? 0} />
 					</div>
 
 					{candidate.bio && (
@@ -140,10 +140,10 @@ export function DeveloperCard({
 								{formatCount(candidate.followers)} followers
 							</span>
 						)}
-						{candidate.public_repos !== undefined && (
+						{candidate.publicRepos !== undefined && (
 							<span className="flex items-center gap-1">
 								<RepoIcon className="h-3 w-3" />
-								{candidate.public_repos} repos
+								{candidate.publicRepos} repos
 							</span>
 						)}
 						{candidate.location && (
