@@ -5,7 +5,7 @@ export type ShortlistSummary = {
   candidateCount?: number;
 };
 
-export type Candidate = {
+export type ShortlistCandidate = {
   username: string;
   name?: string;
   score?: number;
@@ -19,5 +19,11 @@ export type ShortlistDetail = {
   id: string;
   name: string;
   createdAt?: string;
-  candidates: Candidate[];
+  candidates: ShortlistCandidate[];
 };
+
+export type ShortlistCreateInput = {
+  name: string;
+};
+
+export type ShortlistItem = ShortlistDetail;

@@ -8,6 +8,7 @@ import {
 } from "@/hooks/useShortlists";
 import { ShortlistCandidatesTable } from "@/components/shortlists/ShortlistCandidatesTable";
 import { CompareView } from "@/components/shortlists/CompareView";
+import Navigation from "@/components/Navigation";
 
 export default function ShortlistDetailPage() {
   const router = useRouter();
@@ -41,12 +42,14 @@ export default function ShortlistDetailPage() {
     });
   };
 
-  if (isLoading) return <div className="p-6 text-sm opacity-80">Loading shortlist…</div>;
-  if (error) return <div className="p-6 text-sm text-red-600">Failed to load shortlist.</div>;
-  if (!data) return <div className="p-6 text-sm text-red-600">Shortlist not found.</div>;
+  if (isLoading) return <div className="min-h-screen bg-background"><Navigation /><div className="p-6 pt-24 text-sm opacity-80">Loading shortlist…</div></div>;
+  if (error) return <div className="min-h-screen bg-background"><Navigation /><div className="p-6 pt-24 text-sm text-red-600">Failed to load shortlist.</div></div>;
+  if (!data) return <div className="min-h-screen bg-background"><Navigation /><div className="p-6 pt-24 text-sm text-red-600">Shortlist not found.</div></div>;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <div className="mx-auto max-w-7xl px-6 pt-24 pb-12 space-y-6">
       <div className="space-y-1">
         <button className="text-sm underline opacity-80" onClick={() => router.push("/shortlists")}>
           ← Back to shortlists
@@ -67,6 +70,7 @@ export default function ShortlistDetailPage() {
       />
 
       <CompareView candidates={selectedCandidates} />
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCreateShortlist, useDeleteShortlist, useShortlists } from "@/hooks/useShortlists";
 import { ShortlistCard } from "@/components/shortlists/ShortlistCard";
 import { CreateShortlistDialog } from "@/components/shortlists/CreateShortlistDialog";
+import Navigation from "@/components/Navigation";
 
 export default function ShortlistsPage() {
   const router = useRouter();
@@ -23,7 +24,9 @@ export default function ShortlistsPage() {
   }, [q, shortlists]);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <div className="mx-auto max-w-7xl px-6 pt-24 pb-12 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold">Shortlists</h1>
@@ -64,6 +67,7 @@ export default function ShortlistsPage() {
             deleting={deleteMut.isPending}
           />
         ))}
+      </div>
       </div>
     </div>
   );
