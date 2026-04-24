@@ -20,10 +20,14 @@ export type CandidateSearchResult = {
 	type: string
 }
 
+export type ScoredCandidate = CandidateSearchResult & {
+	gitscout_score: number
+}
+
 export type CandidateSearchResponse = {
 	total_count: number
 	incomplete_results: boolean
-	candidates: CandidateSearchResult[]
+	candidates: ScoredCandidate[]
 	rate_limit: RateLimit
 }
 

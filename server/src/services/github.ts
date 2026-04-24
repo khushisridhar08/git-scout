@@ -5,6 +5,7 @@ import type {
 	CandidateSearchResponse,
 	RateLimit,
 } from "../types/github"
+import { scoreSearchResult } from "./scoring"
 
 const PROFILE_CACHE_TTL_MS = 5 * 60 * 1000
 const REPOS_PER_PAGE = 100
@@ -59,14 +60,28 @@ export const githubService = {
 			page,
 		})
 
-		const candidates = response.data.items.map((item) => ({
-			login: item.login,
-			id: item.id,
-			avatar_url: item.avatar_url,
-			html_url: item.html_url,
-			score: item.score,
-			type: item.type,
-		}))
+		const scoreInput = {
+			query: q,
+			language: filters.language,
+			location: filters.location,
+		}
+
+		const candidates = response.data.items
+			.map((item) => {
+				const base = {
+					login: item.login,
+					id: item.id,
+					avatar_url: item.avatar_url,
+					html_url: item.html_url,
+					score: item.score,
+					type: item.type,
+				}
+				return {
+					...base,
+					gitscout_score: scoreSearchResult(base, scoreInput),
+				}
+			})
+			.sort((a, b) => b.gitscout_score - a.gitscout_score)
 
 		return {
 			total_count: response.data.total_count,
