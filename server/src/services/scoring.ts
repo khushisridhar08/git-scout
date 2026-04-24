@@ -1,5 +1,6 @@
 import type {
 	CandidateProfileResponse,
+	CandidateScoreBreakdown,
 	CandidateSearchResult,
 } from "../types/github"
 
@@ -9,16 +10,9 @@ export type SearchScoreInput = {
 	location?: string
 }
 
-export type ScoreBreakdown = {
-	popularity: number
-	activity: number
-	breadth: number
-	reach: number
-}
-
 export type ScoredProfile = {
 	score: number
-	breakdown: ScoreBreakdown
+	breakdown: CandidateScoreBreakdown
 }
 
 const MAX_SCORE = 100

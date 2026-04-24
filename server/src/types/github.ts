@@ -64,6 +64,13 @@ export type CandidateActivity = {
 	latest_event_at: string | null
 }
 
+export type CandidateScoreBreakdown = {
+	popularity: number
+	activity: number
+	breadth: number
+	reach: number
+}
+
 export type CandidateProfileResponse = {
 	profile: CandidateProfile
 	metrics: CandidateMetrics
@@ -71,4 +78,9 @@ export type CandidateProfileResponse = {
 	top_repositories: CandidateRepo[]
 	activity: CandidateActivity
 	rate_limit: RateLimit
+}
+
+export type ScoredCandidateProfile = CandidateProfileResponse & {
+	gitscout_score: number
+	score_breakdown: CandidateScoreBreakdown
 }

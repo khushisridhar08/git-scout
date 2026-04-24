@@ -1,11 +1,22 @@
 import { Elysia, t } from "elysia"
 import { githubService } from "../services/github"
+import { scoreProfile } from "../services/scoring"
+import type { ScoredCandidateProfile } from "../types/github"
 
 export const candidatesRoutes = new Elysia({ prefix: "/candidates" }).get(
 	"/:username",
-	async ({ params, set }) => {
+	async ({
+		params,
+		set,
+	}): Promise<ScoredCandidateProfile | { message: string }> => {
 		try {
-			return await githubService.getUserProfile(params.username)
+			const profile = await githubService.getUserProfile(params.username)
+			const { score, breakdown } = scoreProfile(profile)
+			return {
+				...profile,
+				gitscout_score: score,
+				score_breakdown: breakdown,
+			}
 		} catch (error: unknown) {
 			const status = (error as { status?: number })?.status
 			if (status === 404) {
@@ -20,7 +31,8 @@ export const candidatesRoutes = new Elysia({ prefix: "/candidates" }).get(
 			username: t.String({ minLength: 1 }),
 		}),
 		detail: {
-			summary: "Get a full candidate profile with repos and activity",
+			summary:
+				"Get a scored candidate profile with repositories and activity signals",
 			tags: ["Candidates"],
 		},
 	},
