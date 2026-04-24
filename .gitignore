@@ -45,3 +45,8 @@ next-env.d.ts
 
 # elysia
 server/dist
+
+# SQLite database
+server/data/
+*.sqlite
+*.db

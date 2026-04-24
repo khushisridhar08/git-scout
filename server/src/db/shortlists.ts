@@ -1,0 +1,120 @@
+import { getDb } from "./client"
+
+export type ShortlistRow = {
+	id: string
+	name: string
+	created_at: string
+	updated_at: string
+}
+
+export type ShortlistSummary = ShortlistRow & {
+	candidate_count: number
+}
+
+export type ShortlistCandidateRow = {
+	id: string
+	shortlist_id: string
+	github_username: string
+	cached_profile_json: string | null
+	added_at: string
+}
+
+export function createShortlist(name: string): ShortlistRow {
+	const id = crypto.randomUUID()
+	const now = new Date().toISOString()
+
+	getDb()
+		.prepare(
+			`INSERT INTO shortlists (id, name, created_at, updated_at)
+			 VALUES (?, ?, ?, ?)`,
+		)
+		.run(id, name, now, now)
+
+	return { id, name, created_at: now, updated_at: now }
+}
+
+export function listShortlists(): ShortlistSummary[] {
+	return getDb()
+		.prepare(
+			`SELECT s.id, s.name, s.created_at, s.updated_at,
+			        COUNT(c.id) AS candidate_count
+			 FROM shortlists s
+			 LEFT JOIN shortlist_candidates c ON c.shortlist_id = s.id
+			 GROUP BY s.id
+			 ORDER BY s.created_at DESC`,
+		)
+		.all() as ShortlistSummary[]
+}
+
+export function getShortlistById(id: string) {
+	const db = getDb()
+
+	const shortlist = db
+		.prepare("SELECT * FROM shortlists WHERE id = ?")
+		.get(id) as ShortlistRow | undefined
+
+	if (!shortlist) return null
+
+	const candidates = db
+		.prepare(
+			"SELECT * FROM shortlist_candidates WHERE shortlist_id = ? ORDER BY added_at DESC",
+		)
+		.all(id) as ShortlistCandidateRow[]
+
+	return { ...shortlist, candidates }
+}
+
+export function updateShortlistName(id: string, name: string) {
+	const now = new Date().toISOString()
+	const result = getDb()
+		.prepare("UPDATE shortlists SET name = ?, updated_at = ? WHERE id = ?")
+		.run(name, now, id)
+
+	return { updated: result.changes > 0 }
+}
+
+export function deleteShortlist(id: string) {
+	const result = getDb().prepare("DELETE FROM shortlists WHERE id = ?").run(id)
+
+	return { deleted: result.changes > 0 }
+}
+
+export function addCandidateToShortlist(
+	shortlistId: string,
+	githubUsername: string,
+) {
+	const db = getDb()
+
+	const shortlist = db
+		.prepare("SELECT id FROM shortlists WHERE id = ?")
+		.get(shortlistId)
+
+	if (!shortlist) {
+		return { added: false as const, reason: "shortlist_not_found" as const }
+	}
+
+	const id = crypto.randomUUID()
+	const now = new Date().toISOString()
+
+	db.prepare(
+		`INSERT INTO shortlist_candidates
+		   (id, shortlist_id, github_username, cached_profile_json, added_at)
+		 VALUES (?, ?, ?, ?, ?)`,
+	).run(id, shortlistId, githubUsername, null, now)
+
+	return { added: true as const, id, added_at: now }
+}
+
+export function removeCandidateFromShortlist(
+	shortlistId: string,
+	githubUsername: string,
+) {
+	const result = getDb()
+		.prepare(
+			`DELETE FROM shortlist_candidates
+			 WHERE shortlist_id = ? AND github_username = ?`,
+		)
+		.run(shortlistId, githubUsername)
+
+	return { removed: result.changes > 0 }
+}

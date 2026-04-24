@@ -1,8 +1,9 @@
-import { cors } from "@elysiajs/cors";
-import { swagger } from "@elysiajs/swagger";
-import { Elysia } from "elysia";
-import { healthRoutes } from "./routes/health";
-import { usersRoutes } from "./routes/users";
+import { cors } from "@elysiajs/cors"
+import { swagger } from "@elysiajs/swagger"
+import { Elysia } from "elysia"
+import { healthRoutes } from "./routes/health"
+import { shortlistsRoutes } from "./routes/shortlists"
+import { usersRoutes } from "./routes/users"
 
 const app = new Elysia()
 	.use(
@@ -15,22 +16,24 @@ const app = new Elysia()
 		swagger({
 			documentation: {
 				info: {
-					title: "XORS API",
+					title: "GitScout API",
 					version: "1.0.0",
-					description: "Elysia-powered API for XORS projects",
+					description:
+						"GitHub talent intelligence API for search, candidate profiles, and shortlists.",
 				},
 			},
 		}),
 	)
 	.use(healthRoutes)
 	.use(usersRoutes)
-	.listen(process.env.PORT || 3001);
+	.use(shortlistsRoutes)
+	.listen(process.env.PORT || 3001)
 
 console.log(
 	`🦊 Elysia is running at http://${app.server?.hostname}:${app.server?.port}`,
-);
+)
 console.log(
 	`📚 Swagger docs at http://${app.server?.hostname}:${app.server?.port}/swagger`,
-);
+)
 
-export type App = typeof app;
+export type App = typeof app
