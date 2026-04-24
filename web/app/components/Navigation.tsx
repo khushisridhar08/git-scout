@@ -8,7 +8,6 @@ import { ThemeToggle } from "./ThemeToggle"
 
 type NavigationProps = {
 	variant?: "fixed" | "static"
-	rateLimit?: { remaining: number | null; limit: number | null }
 }
 
 type NavLink = {
@@ -24,10 +23,7 @@ const NAV_LINKS: NavLink[] = [
 	{ href: "/demo", label: "Demo", icon: DemoIcon },
 ]
 
-export default function Navigation({
-	variant = "fixed",
-	rateLimit,
-}: NavigationProps) {
+export default function Navigation({ variant = "fixed" }: NavigationProps) {
 	const pathname = usePathname()
 
 	return (
@@ -46,10 +42,10 @@ export default function Navigation({
 						GitScout
 					</Link>
 					<div className="hidden items-center gap-1 md:flex">
-					{NAV_LINKS.map((link) => {
-						const isActive = link.exact
-							? pathname === link.href
-							: pathname?.startsWith(link.href)
+						{NAV_LINKS.map((link) => {
+							const isActive = link.exact
+								? pathname === link.href
+								: pathname?.startsWith(link.href)
 							return (
 								<Link
 									key={link.href}
@@ -70,10 +66,7 @@ export default function Navigation({
 				</div>
 
 				<div className="flex items-center gap-3">
-					<RateLimitBadge
-						remaining={rateLimit?.remaining ?? null}
-						limit={rateLimit?.limit ?? null}
-					/>
+					<RateLimitBadge />
 					<div className="h-5 w-px bg-border/50" />
 					<ThemeToggle />
 

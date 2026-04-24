@@ -1,29 +1,27 @@
 export type ShortlistSummary = {
-  id: string;
-  name: string;
-  createdAt?: string;
-  candidateCount?: number;
-};
+	id: string
+	name: string
+	createdAt: string
+	updatedAt: string
+	candidateCount: number
+}
 
 export type ShortlistCandidate = {
-  username: string;
-  name?: string;
-  score?: number;
-  repos?: number;
-  followers?: number;
-  topLanguage?: string;
-  language?: string;
-};
+	id: string
+	username: string
+	addedAt: string
+}
 
-export type ShortlistDetail = {
-  id: string;
-  name: string;
-  createdAt?: string;
-  candidates: ShortlistCandidate[];
-};
+export type ShortlistDetail = ShortlistSummary & {
+	candidates: ShortlistCandidate[]
+}
 
 export type ShortlistCreateInput = {
-  name: string;
-};
+	name: string
+}
 
-export type ShortlistItem = ShortlistDetail;
+/** Legacy alias kept for components that imported the older name. */
+export type Shortlist = ShortlistSummary
+
+/** Legacy alias for components that imported the older detail name. */
+export type ShortlistItem = ShortlistDetail

@@ -1,23 +1,38 @@
-"use client";
+"use client"
 
-import type { Candidate } from "@/types/candidate";
+import type { CandidateListItem } from "@/types/candidate"
+import { DeveloperCard } from "./DeveloperCard"
+import { DeveloperCardSkeleton } from "./DeveloperCardSkeleton"
 
 type Props = {
-  candidates: Candidate[];
-  isLoading?: boolean;
-};
+	candidates: CandidateListItem[]
+	isLoading?: boolean
+}
 
 export default function CandidateGrid({ candidates, isLoading }: Props) {
-  if (isLoading) return <p>Loading...</p>;
-  if (!candidates?.length) return <p>No results</p>;
+	if (isLoading) {
+		return (
+			<div className="grid gap-4">
+				{Array.from({ length: 3 }).map((_, i) => (
+					<DeveloperCardSkeleton key={`skeleton-${i}`} />
+				))}
+			</div>
+		)
+	}
 
-  return (
-    <div className="grid gap-4">
-      {candidates.map((c) => (
-        <div key={String(c.username)} className="border p-3">
-          <p>{c.username}</p>
-        </div>
-      ))}
-    </div>
-  );
+	if (candidates.length === 0) {
+		return <p className="text-sm text-muted-foreground">No results</p>
+	}
+
+	return (
+		<div className="grid gap-4">
+			{candidates.map((candidate) => (
+				<DeveloperCard
+					key={candidate.username}
+					candidate={candidate}
+					variant="list"
+				/>
+			))}
+		</div>
+	)
 }

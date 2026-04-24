@@ -1,18 +1,17 @@
-// web/app/hooks/useSearch.ts
-import { useQuery } from "@tanstack/react-query";
-import { searchCandidates } from "@/services/api";
+import { useQuery } from "@tanstack/react-query"
+import { searchCandidates } from "@/lib/api-client"
+import type { SearchFilters, SearchResponse } from "@/types/search"
 
-export function useSearchCandidates(params: Record<string, any>) {
-  // Make queryKey deterministic
-  const key = ["searchCandidates", params];
-
-  return useQuery({
-    queryKey: key,
-    queryFn: ({ signal }) => searchCandidates({ ...params, signal } as any),
-    enabled: Object.keys(params ?? {}).length > 0,
-    staleTime: 30_000,
-  });
+export function useSearchCandidates(filters: SearchFilters | null) {
+	return useQuery<SearchResponse>({
+		queryKey: ["search-candidates", filters],
+		queryFn: ({ signal }) => {
+			if (!filters) throw new Error("filters required")
+			return searchCandidates(filters, signal)
+		},
+		enabled: Boolean(filters?.q && filters.q.trim().length > 0),
+		staleTime: 30_000,
+	})
 }
 
-// Default export for backward-compatible import as `useSearch`
-export default useSearchCandidates;
+export default useSearchCandidates
