@@ -1,76 +1,135 @@
-"use client";
+"use client"
 
-import React, { useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation"
+import { useMemo, useState } from "react"
+import Navigation from "@/components/Navigation"
+import { CompareView } from "@/components/shortlists/CompareView"
+import { ShortlistCandidatesTable } from "@/components/shortlists/ShortlistCandidatesTable"
 import {
-  useRemoveCandidateFromShortlist,
-  useShortlist,
-} from "@/hooks/useShortlists";
-import { ShortlistCandidatesTable } from "@/components/shortlists/ShortlistCandidatesTable";
-import { CompareView } from "@/components/shortlists/CompareView";
-import Navigation from "@/components/Navigation";
+	useRemoveCandidateFromShortlist,
+	useShortlist,
+} from "@/hooks/useShortlists"
+import { downloadCsv, toCsv } from "@/utils/csv"
+
+const MAX_COMPARE = 4
 
 export default function ShortlistDetailPage() {
-  const router = useRouter();
-  const params = useParams<{ id: string }>();
-  const id = params?.id;
+	const router = useRouter()
+	const params = useParams<{ id: string }>()
+	const id = params?.id
 
-  const { data, isLoading, error } = useShortlist(id);
-  const removeMut = useRemoveCandidateFromShortlist();
+	const { data, isLoading, error } = useShortlist(id)
+	const removeMut = useRemoveCandidateFromShortlist()
 
-  const candidates = data?.candidates ?? [];
-  const [selected, setSelected] = useState<Record<string, boolean>>({});
+	const candidates = data?.candidates ?? []
+	const [selected, setSelected] = useState<Record<string, boolean>>({})
 
-  const toggle = (username: string) => {
-    setSelected((prev) => {
-      const next = { ...prev, [username]: !prev[username] };
-      const count = Object.values(next).filter(Boolean).length;
-      if (count > 4) return prev; // max 4 compare
-      return next;
-    });
-  };
+	const toggle = (username: string) => {
+		setSelected((prev) => {
+			const next = { ...prev, [username]: !prev[username] }
+			const count = Object.values(next).filter(Boolean).length
+			if (count > MAX_COMPARE) return prev
+			return next
+		})
+	}
 
-  const selectedCandidates = useMemo(() => {
-    return candidates.filter((c: any) => selected[c.username]).slice(0, 4);
-  }, [candidates, selected]);
+	const selectedCandidates = useMemo(
+		() =>
+			candidates
+				.filter((c) => selected[c.username])
+				.slice(0, MAX_COMPARE),
+		[candidates, selected],
+	)
 
-  const onRemove = async (username: string) => {
-    await removeMut.mutateAsync({ id, username });
-    setSelected((prev) => {
-      const { [username]: _, ...rest } = prev;
-      return rest;
-    });
-  };
+	const onRemove = async (username: string) => {
+		if (!id) return
+		await removeMut.mutateAsync({ id, username })
+		setSelected((prev) => {
+			const { [username]: _, ...rest } = prev
+			return rest
+		})
+	}
 
-  if (isLoading) return <div className="min-h-screen bg-background"><Navigation /><div className="p-6 pt-24 text-sm opacity-80">Loading shortlist…</div></div>;
-  if (error) return <div className="min-h-screen bg-background"><Navigation /><div className="p-6 pt-24 text-sm text-red-600">Failed to load shortlist.</div></div>;
-  if (!data) return <div className="min-h-screen bg-background"><Navigation /><div className="p-6 pt-24 text-sm text-red-600">Shortlist not found.</div></div>;
+	const handleExportCsv = () => {
+		if (!data) return
+		const headers = ["username", "added_at"]
+		const rows = data.candidates.map((c) => [c.username, c.addedAt])
+		const today = new Date().toISOString().slice(0, 10)
+		const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+		downloadCsv(`${slug || "shortlist"}-${today}.csv`, toCsv(headers, rows))
+	}
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="mx-auto max-w-7xl px-6 pt-24 pb-12 space-y-6">
-      <div className="space-y-1">
-        <button className="text-sm underline opacity-80" onClick={() => router.push("/shortlists")}>
-          ← Back to shortlists
-        </button>
+	if (isLoading) {
+		return (
+			<Shell>
+				<p className="text-sm opacity-80">Loading shortlist…</p>
+			</Shell>
+		)
+	}
 
-        <h1 className="text-2xl font-semibold">{data.name}</h1>
-        <p className="text-sm opacity-80">
-          {candidates.length} candidate{candidates.length === 1 ? "" : "s"}
-        </p>
-      </div>
+	if (error) {
+		return (
+			<Shell>
+				<p className="text-red-600 text-sm">Failed to load shortlist.</p>
+			</Shell>
+		)
+	}
 
-      <ShortlistCandidatesTable
-        candidates={candidates}
-        selected={selected}
-        onToggleSelect={toggle}
-        onRemove={onRemove}
-        removing={removeMut.isPending}
-      />
+	if (!data) {
+		return (
+			<Shell>
+				<p className="text-red-600 text-sm">Shortlist not found.</p>
+			</Shell>
+		)
+	}
 
-      <CompareView candidates={selectedCandidates} />
-      </div>
-    </div>
-  );
+	return (
+		<Shell>
+			<div className="flex items-start justify-between gap-4">
+				<div className="space-y-1">
+					<button
+						type="button"
+						className="text-sm underline opacity-80"
+						onClick={() => router.push("/shortlists")}
+					>
+						← Back to shortlists
+					</button>
+					<h1 className="font-semibold text-2xl">{data.name}</h1>
+					<p className="text-sm opacity-80">
+						{candidates.length} candidate{candidates.length === 1 ? "" : "s"}
+					</p>
+				</div>
+
+				<button
+					type="button"
+					onClick={handleExportCsv}
+					disabled={candidates.length === 0}
+					className="rounded-md border border-border/50 px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+				>
+					Export CSV
+				</button>
+			</div>
+
+			<ShortlistCandidatesTable
+				candidates={candidates}
+				selected={selected}
+				onToggleSelect={toggle}
+				onRemove={onRemove}
+				removing={removeMut.isPending}
+			/>
+
+			<CompareView candidates={selectedCandidates} />
+		</Shell>
+	)
+}
+
+function Shell({ children }: { children: React.ReactNode }) {
+	return (
+		<div className="min-h-screen bg-background">
+			<Navigation />
+			<div className="mx-auto max-w-7xl space-y-6 px-6 pt-24 pb-12">
+				{children}
+			</div>
+		</div>
+	)
 }
