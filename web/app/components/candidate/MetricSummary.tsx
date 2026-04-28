@@ -10,8 +10,8 @@ function MetricCard({
 	value: number | string
 }) {
 	return (
-		<div className="rounded-xl border bg-white p-4 shadow-sm">
-			<div className="text-xs text-gray-600">{label}</div>
+		<div className="rounded-xl border bg-card p-4 shadow-sm">
+			<div className="text-xs text-muted-foreground">{label}</div>
 			<div className="mt-1 font-semibold text-xl tabular-nums">{value}</div>
 		</div>
 	)

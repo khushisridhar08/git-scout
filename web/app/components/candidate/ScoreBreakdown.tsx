@@ -22,12 +22,12 @@ export function ScoreBreakdown({ candidate }: { candidate: Candidate }) {
 	>
 
 	return (
-		<div className="rounded-xl border bg-white p-5 shadow-sm">
+		<div className="rounded-xl border bg-card p-5 shadow-sm">
 			<div className="flex items-baseline justify-between">
 				<h2 className="font-semibold text-base">Score Breakdown</h2>
-				<span className="text-gray-600 text-sm">
+				<span className="text-muted-foreground text-sm">
 					Overall:{" "}
-					<span className="font-semibold text-gray-900">
+					<span className="font-semibold text-foreground">
 						{Math.round(candidate.score)}
 					</span>
 				</span>
@@ -40,15 +40,15 @@ export function ScoreBreakdown({ candidate }: { candidate: Candidate }) {
 					return (
 						<li key={key} className="space-y-1">
 							<div className="flex items-baseline justify-between text-sm">
-								<span className="text-gray-800">{METRIC_LABELS[key]}</span>
-								<span className="font-medium text-gray-900 tabular-nums">
+								<span className="text-foreground">{METRIC_LABELS[key]}</span>
+								<span className="font-medium text-foreground tabular-nums">
 									{value}
-									<span className="text-gray-500"> / {weight}</span>
+									<span className="text-muted-foreground"> / {weight}</span>
 								</span>
 							</div>
-							<div className="h-2 w-full rounded-full bg-gray-100">
+							<div className="h-2 w-full rounded-full bg-muted">
 								<div
-									className="h-2 rounded-full bg-gray-900"
+									className="h-2 rounded-full bg-foreground"
 									style={{ width: `${percent}%` }}
 								/>
 							</div>

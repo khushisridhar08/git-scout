@@ -2,11 +2,11 @@
 
 export function LanguageChart({ languages }: { languages: string[] }) {
 	return (
-		<div className="rounded-xl border bg-white p-5 shadow-sm">
+		<div className="rounded-xl border bg-card p-5 shadow-sm">
 			<h2 className="font-semibold text-base">Languages</h2>
 
 			{languages.length === 0 ? (
-				<p className="mt-4 text-gray-600 text-sm">
+				<p className="mt-4 text-muted-foreground text-sm">
 					No language data available.
 				</p>
 			) : (
@@ -14,7 +14,7 @@ export function LanguageChart({ languages }: { languages: string[] }) {
 					{languages.slice(0, 12).map((language) => (
 						<span
 							key={language}
-							className="rounded-full bg-gray-100 px-2 py-1 text-gray-800 text-xs"
+							className="rounded-full bg-muted px-2 py-1 text-foreground text-xs"
 						>
 							{language}
 						</span>

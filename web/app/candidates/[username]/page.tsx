@@ -41,7 +41,7 @@ export default function CandidateProfilePage() {
 				<div className="flex items-center justify-between gap-3">
 					<Link
 						href={backTo}
-						className="rounded border bg-white px-3 py-2 text-sm hover:bg-gray-50"
+						className="rounded border bg-card px-3 py-2 text-sm hover:bg-muted"
 					>
 						← Back
 					</Link>
@@ -52,16 +52,16 @@ export default function CandidateProfilePage() {
 
 				{isLoading && (
 					<div className="space-y-3">
-						<div className="h-6 w-48 animate-pulse rounded bg-gray-200" />
-						<div className="h-32 animate-pulse rounded bg-gray-200" />
-						<div className="h-64 animate-pulse rounded bg-gray-200" />
+						<div className="h-6 w-48 animate-pulse rounded bg-muted" />
+						<div className="h-32 animate-pulse rounded bg-muted" />
+						<div className="h-64 animate-pulse rounded bg-muted" />
 					</div>
 				)}
 
 				{error && (
 					<div className="space-y-2">
 						<p className="text-red-600 text-sm">Failed to load candidate.</p>
-						<pre className="overflow-auto rounded border bg-gray-50 p-3 text-xs">
+						<pre className="overflow-auto rounded border bg-muted p-3 text-xs">
 							{(error as Error).message}
 						</pre>
 						<button

@@ -20,16 +20,20 @@ export function ActivityTimeline({ candidate }: { candidate: Candidate }) {
 	const { recentEventCount, latestEventType, latestEventAt } = candidate
 
 	return (
-		<div className="rounded-xl border bg-white p-5 shadow-sm">
+		<div className="rounded-xl border bg-card p-5 shadow-sm">
 			<div className="flex items-baseline justify-between">
 				<h2 className="font-semibold text-base">Recent Activity</h2>
-				<span className="text-gray-500 text-xs">{recentEventCount} events</span>
+				<span className="text-muted-foreground text-xs">
+					{recentEventCount} events
+				</span>
 			</div>
 
 			{recentEventCount === 0 ? (
-				<p className="mt-4 text-gray-600 text-sm">No recent public activity.</p>
+				<p className="mt-4 text-muted-foreground text-sm">
+					No recent public activity.
+				</p>
 			) : (
-				<p className="mt-4 text-gray-700 text-sm">
+				<p className="mt-4 text-foreground text-sm">
 					Last seen{" "}
 					{latestEventType ? formatEventType(latestEventType) : "active"}{" "}
 					{latestEventAt ? formatRelative(latestEventAt) : "recently"}.

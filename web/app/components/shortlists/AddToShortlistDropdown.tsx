@@ -39,7 +39,7 @@ export function AddToShortlistDropdown(props: {
 			</button>
 
 			{open && (
-				<div className="absolute right-0 mt-2 w-64 rounded-md border bg-white shadow-lg z-20">
+				<div className="absolute right-0 mt-2 w-64 rounded-md border bg-card shadow-lg z-20">
 					<div className="p-2 text-xs opacity-70 border-b">
 						Choose a shortlist
 					</div>
@@ -49,7 +49,7 @@ export function AddToShortlistDropdown(props: {
 							<button
 								type="button"
 								key={s.id}
-								className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center justify-between"
+								className="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center justify-between"
 								onClick={() => add(s.id)}
 								disabled={addMut.isPending}
 							>

@@ -18,7 +18,7 @@ export function ShortlistCandidatesTable(props: {
 
 			<div className="overflow-x-auto">
 				<table className="w-full text-sm">
-					<thead className="bg-gray-50">
+					<thead className="bg-muted">
 						<tr className="text-left">
 							<th className="p-3 w-10"></th>
 							<th className="p-3">Name</th>

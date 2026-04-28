@@ -5,7 +5,7 @@ import type { Candidate } from "@/types/candidate"
 
 export function ProfileHeader({ candidate }: { candidate: Candidate }) {
 	return (
-		<div className="rounded-xl border bg-white p-5 shadow-sm">
+		<div className="rounded-xl border bg-card p-5 shadow-sm">
 			<div className="flex items-start gap-4">
 				<Image
 					src={candidate.avatarUrl}
@@ -25,32 +25,32 @@ export function ProfileHeader({ candidate }: { candidate: Candidate }) {
 							href={candidate.htmlUrl}
 							target="_blank"
 							rel="noreferrer"
-							className="text-gray-600 text-sm hover:underline"
+							className="text-muted-foreground text-sm hover:underline"
 						>
 							@{candidate.username}
 						</a>
-						<span className="ml-auto text-gray-600 text-sm">
+						<span className="ml-auto text-muted-foreground text-sm">
 							Score:{" "}
-							<span className="font-semibold text-gray-900">
+							<span className="font-semibold text-foreground">
 								{Math.round(candidate.score)}
 							</span>
 						</span>
 					</div>
 
 					{candidate.bio && (
-						<p className="mt-2 text-gray-700 text-sm">{candidate.bio}</p>
+						<p className="mt-2 text-foreground text-sm">{candidate.bio}</p>
 					)}
 
-					<div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-gray-600 text-sm">
+					<div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground text-sm">
 						{candidate.location && (
 							<span>
-								<span className="text-gray-500">Location:</span>{" "}
+								<span className="text-muted-foreground">Location:</span>{" "}
 								{candidate.location}
 							</span>
 						)}
 						{candidate.company && (
 							<span>
-								<span className="text-gray-500">Company:</span>{" "}
+								<span className="text-muted-foreground">Company:</span>{" "}
 								{candidate.company}
 							</span>
 						)}

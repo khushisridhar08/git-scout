@@ -36,7 +36,7 @@ export function CreateShortlistDialog(props: {
 						className="absolute inset-0 bg-black/40"
 						onClick={() => !isCreating && setOpen(false)}
 					/>
-					<div className="relative z-10 w-full max-w-md rounded-lg bg-white p-5 shadow-lg space-y-4">
+					<div className="relative z-10 w-full max-w-md rounded-lg bg-card p-5 shadow-lg space-y-4">
 						<div className="space-y-1">
 							<div className="text-lg font-semibold">Create shortlist</div>
 							<div className="text-sm opacity-70">
