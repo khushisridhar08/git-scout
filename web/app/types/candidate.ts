@@ -25,6 +25,7 @@ export type CandidateListItem = {
 	htmlUrl: string
 	type: string
 	score: number
+	reasoning?: string
 }
 
 /**

@@ -70,20 +70,27 @@ export function DeveloperCard({
 					className="h-12 w-12 rounded-full bg-muted"
 				/>
 				<div className="min-w-0 flex-1">
-					<div className="flex items-start justify-between">
-						<div>
+					<div className="flex items-start justify-between gap-3">
+						<div className="min-w-0">
 							<span className="text-sm font-medium text-foreground">
 								{displayName}
 							</span>
 							<span className="ml-2 text-xs text-muted-foreground">
 								@{candidate.username}
 							</span>
+							<p className="mt-1 text-xs text-muted-foreground">
+								{candidate.type === "Organization"
+									? "Organization"
+									: "Developer"}
+							</p>
 						</div>
 						<ScoreBadge score={candidate.score} />
 					</div>
-					<p className="mt-1 text-xs text-muted-foreground">
-						{candidate.type === "Organization" ? "Organization" : "Developer"}
-					</p>
+					{candidate.reasoning && (
+						<p className="mt-3 text-sm leading-relaxed text-foreground/80">
+							{candidate.reasoning}
+						</p>
+					)}
 				</div>
 			</div>
 		</Link>

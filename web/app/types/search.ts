@@ -21,3 +21,15 @@ export type SearchResponse = {
 	candidates: CandidateListItem[]
 	rateLimit: RateLimit
 }
+
+export type AiSearchResponse = {
+	query: string
+	intent: string
+	parsed: {
+		language: string | null
+		location: string | null
+		refinedQuery: string
+	}
+	candidates: CandidateListItem[]
+	rateLimit: RateLimit
+}

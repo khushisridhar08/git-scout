@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/utils/cn"
-import { RateLimitBadge } from "./RateLimitBadge"
 import { ThemeToggle } from "./ThemeToggle"
 
 type NavigationProps = {
@@ -65,8 +64,6 @@ export default function Navigation({ variant = "fixed" }: NavigationProps) {
 				</div>
 
 				<div className="flex items-center gap-3">
-					<RateLimitBadge />
-					<div className="h-5 w-px bg-border/50" />
 					<ThemeToggle />
 
 					{/* Mobile hamburger */}

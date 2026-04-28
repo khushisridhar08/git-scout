@@ -43,7 +43,7 @@ export function SearchBar({
 				type="text"
 				value={value}
 				onChange={(e) => onChange(e.target.value)}
-				placeholder="Search developers by name, username, or bio keywords..."
+				placeholder='Try "best Rust developer in Berlin" or "react native engineers with open source experience"'
 				className={cn(
 					"w-full rounded-lg border border-border/50 bg-card py-3 pl-10 pr-16 text-sm",
 					"text-foreground placeholder:text-muted-foreground",

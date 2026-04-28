@@ -1,7 +1,6 @@
 export * from "./Button"
 export * from "./FullScreenPanel"
 export * from "./Navigation"
-export * from "./RateLimitBadge"
 export * from "./ScoreBadge"
 export * from "./Text"
 export * from "./ThemeToggle"

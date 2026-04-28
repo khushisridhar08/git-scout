@@ -4,7 +4,12 @@ import type {
 	CandidateRepo,
 	CandidateScoreBreakdown,
 } from "@/types/candidate"
-import type { RateLimit, SearchFilters, SearchResponse } from "@/types/search"
+import type {
+	AiSearchResponse,
+	RateLimit,
+	SearchFilters,
+	SearchResponse,
+} from "@/types/search"
 import type {
 	ShortlistCandidate,
 	ShortlistDetail,
@@ -24,31 +29,6 @@ export class ApiError extends Error {
 		this.name = "ApiError"
 		this.status = status
 		this.body = body
-	}
-}
-
-let latestRateLimit: RateLimit = {
-	limit: null,
-	remaining: null,
-	resetAt: null,
-}
-const rateLimitListeners = new Set<(value: RateLimit) => void>()
-
-export function getLatestRateLimit(): RateLimit {
-	return latestRateLimit
-}
-
-export function subscribeToRateLimit(
-	listener: (value: RateLimit) => void,
-): () => void {
-	rateLimitListeners.add(listener)
-	return () => rateLimitListeners.delete(listener)
-}
-
-function updateRateLimit(value: RateLimit) {
-	latestRateLimit = value
-	for (const listener of rateLimitListeners) {
-		listener(value)
 	}
 }
 
@@ -126,12 +106,62 @@ export async function searchCandidates(
 		{ method: "GET", signal },
 	)
 
-	updateRateLimit(data.rate_limit)
-
 	return {
 		totalCount: data.total_count,
 		incompleteResults: data.incomplete_results,
 		candidates: data.candidates.map(toCandidateListItem),
+		rateLimit: data.rate_limit,
+	}
+}
+
+type AiSearchPayload = {
+	query: string
+	intent: string
+	parsed: {
+		language: string | null
+		location: string | null
+		refined_query: string
+	}
+	candidates: Array<{
+		login: string
+		avatar_url: string
+		html_url: string
+		type: string
+		ai_score: number
+		gitscout_score: number
+		reasoning: string
+		name?: string | null
+	}>
+	rate_limit: RateLimit
+}
+
+export async function searchCandidatesAi(
+	rawQuery: string,
+	signal?: AbortSignal,
+): Promise<AiSearchResponse> {
+	const params = new URLSearchParams({ q: rawQuery })
+	const data = await request<AiSearchPayload>(
+		`/search/ai?${params.toString()}`,
+		{ method: "GET", signal },
+	)
+
+	return {
+		query: data.query,
+		intent: data.intent,
+		parsed: {
+			language: data.parsed.language,
+			location: data.parsed.location,
+			refinedQuery: data.parsed.refined_query,
+		},
+		candidates: data.candidates.map((raw) => ({
+			username: raw.login,
+			name: raw.name ?? null,
+			avatarUrl: raw.avatar_url,
+			htmlUrl: raw.html_url,
+			type: raw.type,
+			score: raw.ai_score,
+			reasoning: raw.reasoning,
+		})),
 		rateLimit: data.rate_limit,
 	}
 }
@@ -193,8 +223,6 @@ export async function getCandidateProfile(
 		`/candidates/${encodeURIComponent(username)}`,
 		{ method: "GET", signal },
 	)
-
-	updateRateLimit(data.rate_limit)
 
 	const languages = Object.entries(data.languages)
 		.sort(([, a], [, b]) => b - a)
