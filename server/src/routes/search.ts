@@ -46,12 +46,15 @@ export const searchRoutes = new Elysia({ prefix: "/search" })
 					1,
 				)
 
-				const top = githubResults.candidates.slice(0, AI_TOP_N)
+				const top = githubResults.candidates
+					.slice()
+					.sort((a, b) => b.gitscout_score - a.gitscout_score)
+					.slice(0, AI_TOP_N)
 
-				const scored = await Promise.all(
+				const explained = await Promise.all(
 					top.map(async (candidate) => {
 						const ai = await aiService
-							.scoreCandidate({
+							.explainCandidate({
 								username: candidate.login,
 								type: candidate.type,
 								githubRelevance: candidate.score,
@@ -60,14 +63,11 @@ export const searchRoutes = new Elysia({ prefix: "/search" })
 								location: parsed.location,
 							})
 							.catch(() => ({
-								score: candidate.gitscout_score,
-								reasoning: "Scoring failed; showing fallback rank.",
+								reasoning: "Reasoning unavailable; showing fallback rank.",
 							}))
-						return { ...candidate, ai_score: ai.score, reasoning: ai.reasoning }
+						return { ...candidate, reasoning: ai.reasoning }
 					}),
 				)
-
-				scored.sort((a, b) => b.ai_score - a.ai_score)
 
 				return {
 					query: query.q,
@@ -77,7 +77,7 @@ export const searchRoutes = new Elysia({ prefix: "/search" })
 						location: parsed.location ?? null,
 						refined_query: parsed.refinedQuery,
 					},
-					candidates: scored,
+					candidates: explained,
 					rate_limit: githubResults.rate_limit,
 				}
 			} catch (err) {

@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk"
 
 const MODEL = "claude-haiku-4-5-20251001"
 const PARSE_CACHE_TTL_MS = 5 * 60 * 1000
-const SCORE_CACHE_TTL_MS = 5 * 60 * 1000
+const REASONING_CACHE_TTL_MS = 5 * 60 * 1000
 
 export type ParsedQuery = {
 	language?: string
@@ -11,8 +11,7 @@ export type ParsedQuery = {
 	intent: string
 }
 
-export type CandidateScore = {
-	score: number
+export type CandidateRationale = {
 	reasoning: string
 }
 
@@ -36,7 +35,7 @@ function getClient(): Anthropic {
 
 type CacheEntry<T> = { value: T; expiresAt: number }
 const parseCache = new Map<string, CacheEntry<ParsedQuery>>()
-const scoreCache = new Map<string, CacheEntry<CandidateScore>>()
+const reasoningCache = new Map<string, CacheEntry<CandidateRationale>>()
 
 function readCache<T>(map: Map<string, CacheEntry<T>>, key: string): T | null {
 	const entry = map.get(key)
@@ -112,15 +111,12 @@ export async function parseQuery(rawQuery: string): Promise<ParsedQuery> {
 	return parsed
 }
 
-const SCORE_SYSTEM = `You evaluate how well a GitHub user matches a recruiter's intent based on their public GitHub profile signal.
+const REASONING_SYSTEM = `You explain why a GitHub user matches a recruiter's intent based on their public GitHub profile signal.
 
 Return ONLY a JSON object:
-- "score": integer 0-100. Calibrate: 90+ exceptional fit, 70-89 strong fit, 50-69 plausible, below 50 weak signal.
-- "reasoning": one sentence (max 18 words), specific. Reference the strongest signal you see (popularity, account type, login relevance). Do not start with "This candidate" or "The user".
+- "reasoning": one sentence (max 18 words), specific. Reference the strongest signal you see (popularity, account type, login relevance). Do not start with "This candidate" or "The user".`
 
-Be honest. Most candidates from a keyword search are mid-tier — score them that way.`
-
-type ScoreCandidateInput = {
+type ExplainCandidateInput = {
 	username: string
 	type: string
 	githubRelevance: number
@@ -129,11 +125,11 @@ type ScoreCandidateInput = {
 	location?: string
 }
 
-export async function scoreCandidate(
-	input: ScoreCandidateInput,
-): Promise<CandidateScore> {
+export async function explainCandidate(
+	input: ExplainCandidateInput,
+): Promise<CandidateRationale> {
 	const cacheKey = `${input.username.toLowerCase()}|${input.intent.toLowerCase()}`
-	const cached = readCache(scoreCache, cacheKey)
+	const cached = readCache(reasoningCache, cacheKey)
 	if (cached) return cached
 
 	const userMessage = [
@@ -152,7 +148,7 @@ export async function scoreCandidate(
 	const response = await getClient().messages.create({
 		model: MODEL,
 		max_tokens: 200,
-		system: SCORE_SYSTEM,
+		system: REASONING_SYSTEM,
 		messages: [{ role: "user", content: userMessage }],
 	})
 
@@ -161,12 +157,11 @@ export async function scoreCandidate(
 		.map((block) => block.text)
 		.join("")
 
-	const result = extractJson<CandidateScore>(text)
-	result.score = Math.max(0, Math.min(100, Math.round(result.score)))
+	const result = extractJson<CandidateRationale>(text)
 	if (!result.reasoning) result.reasoning = "No reasoning provided."
 
-	writeCache(scoreCache, cacheKey, result, SCORE_CACHE_TTL_MS)
+	writeCache(reasoningCache, cacheKey, result, REASONING_CACHE_TTL_MS)
 	return result
 }
 
-export const aiService = { parseQuery, scoreCandidate }
+export const aiService = { parseQuery, explainCandidate }

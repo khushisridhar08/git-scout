@@ -127,7 +127,6 @@ type AiSearchPayload = {
 		avatar_url: string
 		html_url: string
 		type: string
-		ai_score: number
 		gitscout_score: number
 		reasoning: string
 		name?: string | null
@@ -159,7 +158,7 @@ export async function searchCandidatesAi(
 			avatarUrl: raw.avatar_url,
 			htmlUrl: raw.html_url,
 			type: raw.type,
-			score: raw.ai_score,
+			score: raw.gitscout_score,
 			reasoning: raw.reasoning,
 		})),
 		rateLimit: data.rate_limit,
