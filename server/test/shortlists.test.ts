@@ -100,4 +100,36 @@ describe("Shortlists API", () => {
 		})
 		expect(res.status).toBe(404)
 	})
+
+	it("deduplicates the same candidate added twice", async () => {
+		const created = await req("/shortlists", {
+			method: "POST",
+			body: JSON.stringify({ name: "Dedup" }),
+		})
+		const shortlist = created.body as { id: string }
+
+		const first = await req(`/shortlists/${shortlist.id}/candidates`, {
+			method: "POST",
+			body: JSON.stringify({ github_username: "yyx990803" }),
+		})
+		expect(first.status).toBe(200)
+		const firstBody = first.body as { id: string; already_present?: boolean }
+		expect(firstBody.already_present).toBeUndefined()
+
+		const second = await req(`/shortlists/${shortlist.id}/candidates`, {
+			method: "POST",
+			body: JSON.stringify({ github_username: "yyx990803" }),
+		})
+		expect(second.status).toBe(200)
+		const secondBody = second.body as {
+			id: string
+			already_present?: boolean
+		}
+		expect(secondBody.already_present).toBe(true)
+		expect(secondBody.id).toBe(firstBody.id)
+
+		const fetched = await req(`/shortlists/${shortlist.id}`)
+		const candidates = (fetched.body as { candidates: unknown[] }).candidates
+		expect(candidates.length).toBe(1)
+	})
 })

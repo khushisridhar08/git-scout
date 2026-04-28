@@ -25,7 +25,8 @@ export default function Pagination({
 		(safeTotal === undefined ? true : page < safeTotal) && !isLoading
 
 	const go = (p: number) => {
-		const next = safeTotal === undefined ? Math.max(1, p) : clamp(p, 1, safeTotal)
+		const next =
+			safeTotal === undefined ? Math.max(1, p) : clamp(p, 1, safeTotal)
 		onPageChange(next)
 	}
 

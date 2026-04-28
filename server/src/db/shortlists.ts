@@ -93,6 +93,27 @@ export function addCandidateToShortlist(
 		return { added: false as const, reason: "shortlist_not_found" as const }
 	}
 
+	// Idempotent: if the candidate is already on this shortlist, return the
+	// existing entry instead of inserting a duplicate. Recruiters expect
+	// adding the same person twice to be a no-op, not a double-row.
+	const existing = db
+		.prepare(
+			`SELECT id, added_at FROM shortlist_candidates
+			 WHERE shortlist_id = ? AND github_username = ?`,
+		)
+		.get(shortlistId, githubUsername) as
+		| { id: string; added_at: string }
+		| undefined
+
+	if (existing) {
+		return {
+			added: true as const,
+			id: existing.id,
+			added_at: existing.added_at,
+			already_present: true as const,
+		}
+	}
+
 	const id = crypto.randomUUID()
 	const now = new Date().toISOString()
 

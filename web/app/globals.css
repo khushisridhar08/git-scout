@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Tailwind v4 native config. We removed `@config` because loading the
+ * legacy `tailwind.config.ts` puts the responsive utilities BEFORE the
+ * base utilities in source order — `.hidden` then wins the cascade
+ * over `.md:flex`, breaking every responsive layout in dev mode. */
+@source "../app";
+
+@theme {
+	--breakpoint-sm: 480px;
+	--breakpoint-md: 768px;
+	--breakpoint-lg: 976px;
+	--breakpoint-xl: 1440px;
+}
+
 /* Design tokens */
 :root {
 	/* Colors - Light mode */

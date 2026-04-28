@@ -1,5 +1,6 @@
 "use client"
 
+import { useQueries } from "@tanstack/react-query"
 import { useParams, useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 import Navigation from "@/components/Navigation"
@@ -9,10 +10,22 @@ import {
 	useRemoveCandidateFromShortlist,
 	useShortlist,
 } from "@/hooks/useShortlists"
+import { getCandidateProfile } from "@/lib/api-client"
+import type { Candidate } from "@/types/candidate"
 import { downloadCsv, toCsv } from "@/utils/csv"
 import { downloadShortlistPdf } from "@/utils/pdf"
 
 const MAX_COMPARE = 4
+
+type HydratedCandidate = {
+	username: string
+	addedAt: string
+	name: string | null
+	score: number | null
+	repos: number | null
+	followers: number | null
+	topLanguage: string | null
+}
 
 export default function ShortlistDetailPage() {
 	const router = useRouter()
@@ -22,7 +35,37 @@ export default function ShortlistDetailPage() {
 	const { data, isLoading, error } = useShortlist(id)
 	const removeMut = useRemoveCandidateFromShortlist()
 
-	const candidates = data?.candidates ?? []
+	const rawCandidates = data?.candidates ?? []
+
+	// Fetch every candidate's profile in parallel so we can show real
+	// score / repo / follower / language data in the table — the shortlist
+	// row itself only stores `username` + `addedAt`.
+	const profileQueries = useQueries({
+		queries: rawCandidates.map((c) => ({
+			queryKey: ["candidate", c.username],
+			queryFn: ({ signal }: { signal?: AbortSignal }) =>
+				getCandidateProfile(c.username, signal),
+			staleTime: 60_000,
+		})),
+	})
+
+	const candidates: HydratedCandidate[] = useMemo(
+		() =>
+			rawCandidates.map((c, i) => {
+				const profile: Candidate | undefined = profileQueries[i]?.data
+				return {
+					username: c.username,
+					addedAt: c.addedAt,
+					name: profile?.name ?? null,
+					score: profile?.score ?? null,
+					repos: profile?.publicRepos ?? null,
+					followers: profile?.followers ?? null,
+					topLanguage: profile?.languages?.[0] ?? null,
+				}
+			}),
+		[rawCandidates, profileQueries],
+	)
+
 	const [selected, setSelected] = useState<Record<string, boolean>>({})
 
 	const toggle = (username: string) => {
@@ -50,10 +93,27 @@ export default function ShortlistDetailPage() {
 
 	const buildExportPayload = () => {
 		if (!data) return null
-		const headers = ["username", "added_at"]
-		const rows = data.candidates.map((c) => [c.username, c.addedAt])
+		const headers = [
+			"username",
+			"name",
+			"score",
+			"repos",
+			"followers",
+			"top_language",
+			"added_at",
+		]
+		const rows = candidates.map((c) => [
+			c.username,
+			c.name ?? "",
+			c.score ?? "",
+			c.repos ?? "",
+			c.followers ?? "",
+			c.topLanguage ?? "",
+			c.addedAt,
+		])
 		const today = new Date().toISOString().slice(0, 10)
-		const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "shortlist"
+		const slug =
+			data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "shortlist"
 		return { headers, rows, slug, today }
 	}
 

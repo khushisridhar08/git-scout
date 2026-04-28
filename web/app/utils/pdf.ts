@@ -53,7 +53,9 @@ export function downloadShortlistPdf(options: {
 		startY: 110,
 		head: [headers],
 		body: rows.map((row) =>
-			row.map((cell) => (cell === null || cell === undefined ? "" : String(cell))),
+			row.map((cell) =>
+				cell === null || cell === undefined ? "" : String(cell),
+			),
 		),
 		styles: { fontSize: 9, cellPadding: 6 },
 		headStyles: { fillColor: [13, 17, 23], textColor: 255, fontStyle: "bold" },
