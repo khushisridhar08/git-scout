@@ -1,14 +1,18 @@
 "use client"
 
+import Image from "next/image"
 import type { Candidate } from "@/types/candidate"
 
 export function ProfileHeader({ candidate }: { candidate: Candidate }) {
 	return (
 		<div className="rounded-xl border bg-white p-5 shadow-sm">
 			<div className="flex items-start gap-4">
-				<img
+				<Image
 					src={candidate.avatarUrl}
 					alt={candidate.name ?? candidate.username}
+					width={64}
+					height={64}
+					unoptimized
 					className="h-16 w-16 rounded-full border object-cover"
 				/>
 

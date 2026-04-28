@@ -77,6 +77,8 @@ export default function Navigation({ variant = "fixed" }: NavigationProps) {
 						aria-label="Menu"
 					>
 						<svg
+							role="img"
+							aria-label="Menu"
 							width="20"
 							height="20"
 							viewBox="0 0 24 24"
@@ -98,6 +100,8 @@ export default function Navigation({ variant = "fixed" }: NavigationProps) {
 function SearchIcon({ className }: { className?: string }) {
 	return (
 		<svg
+			role="img"
+			aria-label="Search"
 			className={className}
 			viewBox="0 0 24 24"
 			fill="none"
@@ -115,6 +119,8 @@ function SearchIcon({ className }: { className?: string }) {
 function BookmarkIcon({ className }: { className?: string }) {
 	return (
 		<svg
+			role="img"
+			aria-label="Bookmark"
 			className={className}
 			viewBox="0 0 24 24"
 			fill="none"
@@ -131,6 +137,8 @@ function BookmarkIcon({ className }: { className?: string }) {
 function DemoIcon({ className }: { className?: string }) {
 	return (
 		<svg
+			role="img"
+			aria-label="Demo"
 			className={className}
 			viewBox="0 0 24 24"
 			fill="none"

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import type { Candidate } from "@/types/candidate"
 
@@ -26,9 +27,12 @@ export default function CandidateCard({ candidate }: Props) {
 			<div className="flex items-start gap-3">
 				<div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted">
 					{candidate.avatarUrl ? (
-						<img
+						<Image
 							src={candidate.avatarUrl}
 							alt={name}
+							width={40}
+							height={40}
+							unoptimized
 							className="h-full w-full object-cover"
 						/>
 					) : (

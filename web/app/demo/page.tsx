@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import Image from "next/image"
+import { useCallback, useEffect, useState } from "react"
 import Navigation from "@/components/Navigation"
 import { cn } from "@/utils/cn"
 
@@ -185,9 +186,11 @@ export default function DemoPage() {
 						>
 							<div className="overflow-hidden rounded-lg border border-border/50 bg-card transition-all group-hover:border-border group-hover:ring-1 group-hover:ring-ring/20">
 								<div className="relative aspect-video bg-muted/30">
-									<img
+									<Image
 										src={screen.src}
 										alt={screen.title}
+										width={640}
+										height={360}
 										className="h-full w-full object-cover object-top"
 									/>
 									<div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/30 group-hover:opacity-100">
@@ -277,6 +280,8 @@ function Lightbox({
 				aria-label="Close"
 			>
 				<svg
+					role="img"
+					aria-label="Close"
 					className="h-5 w-5"
 					viewBox="0 0 24 24"
 					fill="none"
@@ -296,6 +301,8 @@ function Lightbox({
 					aria-label="Previous"
 				>
 					<svg
+						role="img"
+						aria-label="Previous"
 						className="h-5 w-5"
 						viewBox="0 0 24 24"
 						fill="none"
@@ -315,6 +322,8 @@ function Lightbox({
 					aria-label="Next"
 				>
 					<svg
+						role="img"
+						aria-label="Next"
 						className="h-5 w-5"
 						viewBox="0 0 24 24"
 						fill="none"
@@ -327,9 +336,11 @@ function Lightbox({
 			)}
 
 			<div className="flex max-h-[90vh] max-w-[90vw] flex-col items-center">
-				<img
+				<Image
 					src={screen.src}
 					alt={screen.title}
+					width={1280}
+					height={800}
 					className="max-h-[75vh] rounded-lg object-contain shadow-2xl"
 				/>
 				<div className="mt-4 text-center">
@@ -349,6 +360,8 @@ function Lightbox({
 function ExpandIcon({ className }: { className?: string }) {
 	return (
 		<svg
+			role="img"
+			aria-label="Expand"
 			className={className}
 			viewBox="0 0 24 24"
 			fill="none"

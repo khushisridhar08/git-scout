@@ -1,5 +1,5 @@
-import localFont from "next/font/local"
 import { Geist, Geist_Mono } from "next/font/google"
+import localFont from "next/font/local"
 
 // Geist - Modern sans-serif from Vercel
 const GeistSans = Geist({

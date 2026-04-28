@@ -80,13 +80,10 @@ export default function Home() {
 					)}
 
 					<div className="mt-4 space-y-4">
-						{isLoading && (
-							<>
-								{Array.from({ length: 3 }).map((_, i) => (
-									<DeveloperCardSkeleton key={`skeleton-${i}`} />
-								))}
-							</>
-						)}
+						{isLoading &&
+							Array.from({ length: 3 }).map((_, i) => (
+								<DeveloperCardSkeleton key={`skeleton-${i}`} />
+							))}
 
 						{isError && (
 							<ErrorState

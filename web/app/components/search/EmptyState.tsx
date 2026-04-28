@@ -7,8 +7,15 @@ type EmptyStateProps = {
 
 export function EmptyState({ onClearFilters, className }: EmptyStateProps) {
 	return (
-		<div className={cn("flex flex-col items-center justify-center py-20", className)}>
+		<div
+			className={cn(
+				"flex flex-col items-center justify-center py-20",
+				className,
+			)}
+		>
 			<svg
+				role="img"
+				aria-label="Empty state illustration"
 				className="h-16 w-16 text-muted-foreground/50"
 				viewBox="0 0 24 24"
 				fill="none"

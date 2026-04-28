@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 import { ScoreBadge } from "@/components/ScoreBadge"
 import type { CandidateListItem } from "@/types/candidate"
@@ -28,9 +29,12 @@ export function DeveloperCard({
 			>
 				<div className="flex items-start justify-between">
 					<div className="flex items-center gap-3">
-						<img
+						<Image
 							src={candidate.avatarUrl}
 							alt={displayName}
+							width={40}
+							height={40}
+							unoptimized
 							className="h-10 w-10 rounded-full bg-muted"
 						/>
 						<div>
@@ -57,9 +61,12 @@ export function DeveloperCard({
 			)}
 		>
 			<div className="flex items-start gap-4">
-				<img
+				<Image
 					src={candidate.avatarUrl}
 					alt={displayName}
+					width={48}
+					height={48}
+					unoptimized
 					className="h-12 w-12 rounded-full bg-muted"
 				/>
 				<div className="min-w-0 flex-1">

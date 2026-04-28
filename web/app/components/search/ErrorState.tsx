@@ -8,8 +8,15 @@ type ErrorStateProps = {
 
 export function ErrorState({ message, onRetry, className }: ErrorStateProps) {
 	return (
-		<div className={cn("flex flex-col items-center justify-center py-20", className)}>
+		<div
+			className={cn(
+				"flex flex-col items-center justify-center py-20",
+				className,
+			)}
+		>
 			<svg
+				role="img"
+				aria-label="Error"
 				className="h-16 w-16 text-red-500/70"
 				viewBox="0 0 24 24"
 				fill="none"

@@ -10,6 +10,7 @@ import {
 	useShortlist,
 } from "@/hooks/useShortlists"
 import { downloadCsv, toCsv } from "@/utils/csv"
+import { downloadShortlistPdf } from "@/utils/pdf"
 
 const MAX_COMPARE = 4
 
@@ -34,10 +35,7 @@ export default function ShortlistDetailPage() {
 	}
 
 	const selectedCandidates = useMemo(
-		() =>
-			candidates
-				.filter((c) => selected[c.username])
-				.slice(0, MAX_COMPARE),
+		() => candidates.filter((c) => selected[c.username]).slice(0, MAX_COMPARE),
 		[candidates, selected],
 	)
 
@@ -50,13 +48,33 @@ export default function ShortlistDetailPage() {
 		})
 	}
 
-	const handleExportCsv = () => {
-		if (!data) return
+	const buildExportPayload = () => {
+		if (!data) return null
 		const headers = ["username", "added_at"]
 		const rows = data.candidates.map((c) => [c.username, c.addedAt])
 		const today = new Date().toISOString().slice(0, 10)
-		const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")
-		downloadCsv(`${slug || "shortlist"}-${today}.csv`, toCsv(headers, rows))
+		const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "shortlist"
+		return { headers, rows, slug, today }
+	}
+
+	const handleExportCsv = () => {
+		const payload = buildExportPayload()
+		if (!payload) return
+		downloadCsv(
+			`${payload.slug}-${payload.today}.csv`,
+			toCsv(payload.headers, payload.rows),
+		)
+	}
+
+	const handleExportPdf = () => {
+		const payload = buildExportPayload()
+		if (!payload || !data) return
+		downloadShortlistPdf({
+			filename: `${payload.slug}-${payload.today}.pdf`,
+			shortlistName: data.name,
+			headers: payload.headers,
+			rows: payload.rows,
+		})
 	}
 
 	if (isLoading) {
@@ -100,14 +118,24 @@ export default function ShortlistDetailPage() {
 					</p>
 				</div>
 
-				<button
-					type="button"
-					onClick={handleExportCsv}
-					disabled={candidates.length === 0}
-					className="rounded-md border border-border/50 px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted disabled:opacity-50"
-				>
-					Export CSV
-				</button>
+				<div className="flex gap-2">
+					<button
+						type="button"
+						onClick={handleExportCsv}
+						disabled={candidates.length === 0}
+						className="rounded-md border border-border/50 px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+					>
+						Export CSV
+					</button>
+					<button
+						type="button"
+						onClick={handleExportPdf}
+						disabled={candidates.length === 0}
+						className="rounded-md border border-border/50 px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+					>
+						Export PDF
+					</button>
+				</div>
 			</div>
 
 			<ShortlistCandidatesTable

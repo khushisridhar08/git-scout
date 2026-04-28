@@ -13,6 +13,8 @@ export function ThemeToggle({ className }: { className?: string }) {
 			aria-label="Toggle theme"
 		>
 			<svg
+				role="img"
+				aria-label="Theme toggle"
 				width="16"
 				height="16"
 				viewBox="0 0 24 24"

@@ -5,7 +5,6 @@ import { candidatesRoutes } from "./routes/candidates"
 import { healthRoutes } from "./routes/health"
 import { searchRoutes } from "./routes/search"
 import { shortlistsRoutes } from "./routes/shortlists"
-import { usersRoutes } from "./routes/users"
 
 export function createApp() {
 	return new Elysia()
@@ -28,7 +27,6 @@ export function createApp() {
 			}),
 		)
 		.use(healthRoutes)
-		.use(usersRoutes)
 		.use(searchRoutes)
 		.use(candidatesRoutes)
 		.use(shortlistsRoutes)

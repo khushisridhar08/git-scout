@@ -22,9 +22,22 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 /**
- * Scores a search result based on query relevance and filter matches.
- * Search results do not carry deep profile data, so this is deliberately
- * lightweight — the richer talent score is produced for full profiles.
+ * Lightweight relevance score for a search hit (0..100).
+ *
+ * The GitHub search API returns bare candidate summaries — no stars, no
+ * repos, no activity — so this function cannot use the full talent score.
+ * Instead it composes four fast-to-compute signals:
+ *
+ *   1. GitHub's own relevance score (≈ 0..1), scaled into 0..50
+ *   2. Login-vs-query match: exact (25) > prefix (18) > substring (12)
+ *      > word-match (up to 10)
+ *   3. Account type bonus: User (+10) / Organization (+3)
+ *   4. Filter specificity bonus: language (+5), location (+3) — when the
+ *      caller supplied these, the hit is known to satisfy them
+ *
+ * The result is clamped to [0, 100] and rounded. This is only used to
+ * re-rank the search page; the richer `scoreProfile` below is the score
+ * displayed in the UI for a full candidate.
  */
 export function scoreSearchResult(
 	candidate: CandidateSearchResult,
@@ -35,7 +48,6 @@ export function scoreSearchResult(
 
 	let score = 0
 
-	// GitHub's own relevance score (roughly 0..1), weighted heavily.
 	score += clamp(candidate.score * 40, 0, 50)
 
 	if (query.length > 0) {
@@ -59,12 +71,27 @@ export function scoreSearchResult(
 }
 
 /**
- * Weighted talent score for a full candidate profile.
+ * GitScout talent score for a fully-hydrated candidate profile (0..100).
  *
- * Weights follow the project proposal, which emphasises verifiable
- * technical signals: starred output, recent activity, language breadth,
- * and community reach. Each sub-score is capped so no single signal can
- * dominate.
+ * A transparent weighted sum of four verifiable GitHub signals. Every
+ * component is returned in the breakdown so the UI can render each bar
+ * with the exact value. Weights follow the project proposal (see SRS
+ * §4 and the pitch deck):
+ *
+ *   ┌──────────────┬─────┬─────────────────────────────────────────────┐
+ *   │ Component    │ Max │ Formula (before clamp)                      │
+ *   ├──────────────┼─────┼─────────────────────────────────────────────┤
+ *   │ Popularity   │ 35  │ (total_stars / 100) * 35                    │
+ *   │ Activity     │ 30  │ (recent_event_count / 30) * 30              │
+ *   │ Breadth      │ 20  │ langs/6*15 + public_repos/40*5              │
+ *   │ Reach        │ 15  │ (followers / 150) * 15                      │
+ *   └──────────────┴─────┴─────────────────────────────────────────────┘
+ *
+ * Each sub-score is clamped to its maximum so no single signal can
+ * dominate — a developer with 100k stars and nothing else still caps
+ * at 35 popularity points. The four sub-scores are rounded
+ * independently, so the breakdown may sum to ±1 off the displayed
+ * total (`total` is rounded from the unrounded sum).
  */
 export function scoreProfile(profile: CandidateProfileResponse): ScoredProfile {
 	const { metrics, activity, languages } = profile
