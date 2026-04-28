@@ -6,6 +6,7 @@ import {
 	useCreateShortlist,
 	useShortlists,
 } from "@/hooks/useShortlists"
+import { useAuth } from "@/providers/AuthProvider"
 
 export function AddToShortlistDropdown(props: {
 	username: string
@@ -16,6 +17,7 @@ export function AddToShortlistDropdown(props: {
 	const { data } = useShortlists()
 	const addMut = useAddCandidateToShortlist()
 	const createMut = useCreateShortlist()
+	const { requireAuth } = useAuth()
 
 	const [open, setOpen] = useState(false)
 	const [creating, setCreating] = useState(false)
@@ -59,7 +61,7 @@ export function AddToShortlistDropdown(props: {
 			<button
 				type="button"
 				className="rounded-md border px-3 py-2 text-sm"
-				onClick={() => setOpen((v) => !v)}
+				onClick={() => requireAuth(() => setOpen((v) => !v))}
 			>
 				{buttonLabel}
 			</button>

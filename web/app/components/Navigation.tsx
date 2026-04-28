@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useAuth } from "@/providers/AuthProvider"
 import { cn } from "@/utils/cn"
 import { ThemeToggle } from "./ThemeToggle"
 
@@ -64,6 +65,7 @@ export default function Navigation({ variant = "fixed" }: NavigationProps) {
 				</div>
 
 				<div className="flex items-center gap-3">
+					<AuthControls />
 					<ThemeToggle />
 
 					{/* Mobile hamburger */}
@@ -90,6 +92,39 @@ export default function Navigation({ variant = "fixed" }: NavigationProps) {
 				</div>
 			</div>
 		</nav>
+	)
+}
+
+function AuthControls() {
+	const { user, isLoading, signOut, requireAuth } = useAuth()
+
+	if (isLoading) return null
+
+	if (!user) {
+		return (
+			<button
+				type="button"
+				className="rounded-md border border-border/60 px-3 py-1.5 text-sm text-foreground hover:bg-muted/40"
+				onClick={() => requireAuth(() => {})}
+			>
+				Sign in
+			</button>
+		)
+	}
+
+	return (
+		<div className="flex items-center gap-2">
+			<span className="hidden text-xs text-muted-foreground sm:inline">
+				{user.email}
+			</span>
+			<button
+				type="button"
+				className="rounded-md border border-border/60 px-3 py-1.5 text-sm text-foreground hover:bg-muted/40"
+				onClick={() => void signOut()}
+			>
+				Sign out
+			</button>
+		</div>
 	)
 }
 

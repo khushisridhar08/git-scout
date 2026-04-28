@@ -7,23 +7,18 @@ const { resetDb } = await import("../src/db/client")
 
 const app = createApp()
 
-beforeAll(() => {
-	resetDb()
-})
-
-afterAll(() => {
-	resetDb()
-})
+let sessionCookie = ""
 
 async function req(
 	path: string,
 	init?: RequestInit,
-): Promise<{ status: number; body: unknown }> {
+): Promise<{ status: number; body: unknown; setCookie: string | null }> {
 	const res = await app.handle(
 		new Request(`http://test${path}`, {
 			...init,
 			headers: {
 				"content-type": "application/json",
+				...(sessionCookie ? { cookie: sessionCookie } : {}),
 				...(init?.headers ?? {}),
 			},
 		}),
@@ -34,10 +29,51 @@ async function req(
 	} catch {
 		body = null
 	}
-	return { status: res.status, body }
+	return {
+		status: res.status,
+		body,
+		setCookie: res.headers.get("set-cookie"),
+	}
 }
 
+function extractSessionCookie(setCookie: string | null): string {
+	if (!setCookie) return ""
+	const first = setCookie.split(",").find((c) => c.includes("gitscout_session="))
+	if (!first) return ""
+	return first.split(";")[0].trim()
+}
+
+beforeAll(async () => {
+	resetDb()
+	const registered = await req("/auth/register", {
+		method: "POST",
+		body: JSON.stringify({
+			email: "tester@example.com",
+			password: "supersecret",
+		}),
+	})
+	expect(registered.status).toBe(200)
+	sessionCookie = extractSessionCookie(registered.setCookie)
+	expect(sessionCookie).toContain("gitscout_session=")
+})
+
+afterAll(() => {
+	sessionCookie = ""
+	resetDb()
+})
+
 describe("Shortlists API", () => {
+	it("rejects unauthenticated requests", async () => {
+		const saved = sessionCookie
+		sessionCookie = ""
+		try {
+			const res = await req("/shortlists")
+			expect(res.status).toBe(401)
+		} finally {
+			sessionCookie = saved
+		}
+	})
+
 	it("starts with an empty list", async () => {
 		const res = await req("/shortlists")
 		expect(res.status).toBe(200)
@@ -131,5 +167,33 @@ describe("Shortlists API", () => {
 		const fetched = await req(`/shortlists/${shortlist.id}`)
 		const candidates = (fetched.body as { candidates: unknown[] }).candidates
 		expect(candidates.length).toBe(1)
+	})
+
+	it("isolates shortlists between users", async () => {
+		const ownerCreated = await req("/shortlists", {
+			method: "POST",
+			body: JSON.stringify({ name: "Owner private" }),
+		})
+		const ownerShortlist = ownerCreated.body as { id: string }
+
+		const savedCookie = sessionCookie
+		sessionCookie = ""
+		const otherRegistered = await req("/auth/register", {
+			method: "POST",
+			body: JSON.stringify({
+				email: "other@example.com",
+				password: "supersecret",
+			}),
+		})
+		sessionCookie = extractSessionCookie(otherRegistered.setCookie)
+
+		const otherList = await req("/shortlists")
+		expect(otherList.status).toBe(200)
+		expect((otherList.body as unknown[]).length).toBe(0)
+
+		const otherFetch = await req(`/shortlists/${ownerShortlist.id}`)
+		expect(otherFetch.status).toBe(404)
+
+		sessionCookie = savedCookie
 	})
 })

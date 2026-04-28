@@ -7,20 +7,24 @@ import {
 	listShortlists,
 	removeCandidateFromShortlist,
 } from "@/lib/api-client"
+import { useAuth } from "@/providers/AuthProvider"
 
 export function useShortlists() {
+	const { user } = useAuth()
 	return useQuery({
 		queryKey: ["shortlists"],
 		queryFn: ({ signal }) => listShortlists(signal),
 		staleTime: 30_000,
+		enabled: Boolean(user),
 	})
 }
 
 export function useShortlist(id?: string) {
+	const { user } = useAuth()
 	return useQuery({
 		queryKey: ["shortlist", id],
 		queryFn: ({ signal }) => getShortlist(id as string, signal),
-		enabled: Boolean(id),
+		enabled: Boolean(id) && Boolean(user),
 		staleTime: 15_000,
 	})
 }

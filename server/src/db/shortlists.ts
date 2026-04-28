@@ -2,6 +2,7 @@ import { getDb } from "./client"
 
 export type ShortlistRow = {
 	id: string
+	owner_id: string
 	name: string
 	created_at: string
 	updated_at: string
@@ -19,39 +20,40 @@ export type ShortlistCandidateRow = {
 	added_at: string
 }
 
-export function createShortlist(name: string): ShortlistRow {
+export function createShortlist(ownerId: string, name: string): ShortlistRow {
 	const id = crypto.randomUUID()
 	const now = new Date().toISOString()
 
 	getDb()
 		.prepare(
-			`INSERT INTO shortlists (id, name, created_at, updated_at)
-			 VALUES (?, ?, ?, ?)`,
+			`INSERT INTO shortlists (id, owner_id, name, created_at, updated_at)
+			 VALUES (?, ?, ?, ?, ?)`,
 		)
-		.run(id, name, now, now)
+		.run(id, ownerId, name, now, now)
 
-	return { id, name, created_at: now, updated_at: now }
+	return { id, owner_id: ownerId, name, created_at: now, updated_at: now }
 }
 
-export function listShortlists(): ShortlistSummary[] {
+export function listShortlists(ownerId: string): ShortlistSummary[] {
 	return getDb()
 		.prepare(
-			`SELECT s.id, s.name, s.created_at, s.updated_at,
+			`SELECT s.id, s.owner_id, s.name, s.created_at, s.updated_at,
 			        COUNT(c.id) AS candidate_count
 			 FROM shortlists s
 			 LEFT JOIN shortlist_candidates c ON c.shortlist_id = s.id
+			 WHERE s.owner_id = ?
 			 GROUP BY s.id
 			 ORDER BY s.created_at DESC`,
 		)
-		.all() as ShortlistSummary[]
+		.all(ownerId) as ShortlistSummary[]
 }
 
-export function getShortlistById(id: string) {
+export function getShortlistById(ownerId: string, id: string) {
 	const db = getDb()
 
 	const shortlist = db
-		.prepare("SELECT * FROM shortlists WHERE id = ?")
-		.get(id) as ShortlistRow | undefined
+		.prepare("SELECT * FROM shortlists WHERE id = ? AND owner_id = ?")
+		.get(id, ownerId) as ShortlistRow | undefined
 
 	if (!shortlist) return null
 
@@ -64,30 +66,39 @@ export function getShortlistById(id: string) {
 	return { ...shortlist, candidates }
 }
 
-export function updateShortlistName(id: string, name: string) {
+export function updateShortlistName(
+	ownerId: string,
+	id: string,
+	name: string,
+) {
 	const now = new Date().toISOString()
 	const result = getDb()
-		.prepare("UPDATE shortlists SET name = ?, updated_at = ? WHERE id = ?")
-		.run(name, now, id)
+		.prepare(
+			"UPDATE shortlists SET name = ?, updated_at = ? WHERE id = ? AND owner_id = ?",
+		)
+		.run(name, now, id, ownerId)
 
 	return { updated: result.changes > 0 }
 }
 
-export function deleteShortlist(id: string) {
-	const result = getDb().prepare("DELETE FROM shortlists WHERE id = ?").run(id)
+export function deleteShortlist(ownerId: string, id: string) {
+	const result = getDb()
+		.prepare("DELETE FROM shortlists WHERE id = ? AND owner_id = ?")
+		.run(id, ownerId)
 
 	return { deleted: result.changes > 0 }
 }
 
 export function addCandidateToShortlist(
+	ownerId: string,
 	shortlistId: string,
 	githubUsername: string,
 ) {
 	const db = getDb()
 
 	const shortlist = db
-		.prepare("SELECT id FROM shortlists WHERE id = ?")
-		.get(shortlistId)
+		.prepare("SELECT id FROM shortlists WHERE id = ? AND owner_id = ?")
+		.get(shortlistId, ownerId)
 
 	if (!shortlist) {
 		return { added: false as const, reason: "shortlist_not_found" as const }
@@ -127,10 +138,19 @@ export function addCandidateToShortlist(
 }
 
 export function removeCandidateFromShortlist(
+	ownerId: string,
 	shortlistId: string,
 	githubUsername: string,
 ) {
-	const result = getDb()
+	const db = getDb()
+
+	const owns = db
+		.prepare("SELECT 1 AS x FROM shortlists WHERE id = ? AND owner_id = ?")
+		.get(shortlistId, ownerId) as { x: number } | undefined
+
+	if (!owns) return { removed: false }
+
+	const result = db
 		.prepare(
 			`DELETE FROM shortlist_candidates
 			 WHERE shortlist_id = ? AND github_username = ?`,

@@ -34,6 +34,7 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 	const response = await fetch(`${API_BASE_URL}${path}`, {
+		credentials: "include",
 		...options,
 		headers: {
 			"Content-Type": "application/json",
@@ -358,4 +359,53 @@ export async function removeCandidateFromShortlist(
 		)}`,
 		{ method: "DELETE" },
 	)
+}
+
+export type AuthUser = {
+	id: string
+	email: string
+	created_at: string
+}
+
+type AuthPayload = { user: AuthUser }
+
+export async function registerUser(
+	email: string,
+	password: string,
+): Promise<AuthUser> {
+	const data = await request<AuthPayload>("/auth/register", {
+		method: "POST",
+		body: JSON.stringify({ email, password }),
+	})
+	return data.user
+}
+
+export async function loginUser(
+	email: string,
+	password: string,
+): Promise<AuthUser> {
+	const data = await request<AuthPayload>("/auth/login", {
+		method: "POST",
+		body: JSON.stringify({ email, password }),
+	})
+	return data.user
+}
+
+export async function logoutUser(): Promise<void> {
+	await request("/auth/logout", { method: "POST" })
+}
+
+export async function getCurrentUser(
+	signal?: AbortSignal,
+): Promise<AuthUser | null> {
+	try {
+		const data = await request<AuthPayload>("/auth/me", {
+			method: "GET",
+			signal,
+		})
+		return data.user
+	} catch (err) {
+		if (err instanceof ApiError && err.status === 401) return null
+		throw err
+	}
 }

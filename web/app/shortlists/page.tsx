@@ -10,9 +10,11 @@ import {
 	useDeleteShortlist,
 	useShortlists,
 } from "@/hooks/useShortlists"
+import { useAuth } from "@/providers/AuthProvider"
 
 export default function ShortlistsPage() {
 	const router = useRouter()
+	const { user, isLoading: authLoading, requireAuth } = useAuth()
 
 	const { data, isLoading, error } = useShortlists()
 	const createMut = useCreateShortlist()
@@ -28,6 +30,27 @@ export default function ShortlistsPage() {
 			(s.name ?? "").toLowerCase().includes(query),
 		)
 	}, [q, shortlists])
+
+	if (!authLoading && !user) {
+		return (
+			<div className="min-h-screen bg-background">
+				<Navigation />
+				<div className="mx-auto max-w-7xl px-6 pt-24 pb-12 space-y-4">
+					<h1 className="text-2xl font-semibold">Shortlists</h1>
+					<p className="text-sm opacity-80">
+						Sign in to create and manage candidate shortlists.
+					</p>
+					<button
+						type="button"
+						className="rounded-md bg-black text-white px-4 py-2 text-sm"
+						onClick={() => requireAuth(() => {})}
+					>
+						Sign in
+					</button>
+				</div>
+			</div>
+		)
+	}
 
 	return (
 		<div className="min-h-screen bg-background">
