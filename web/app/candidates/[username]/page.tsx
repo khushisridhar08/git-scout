@@ -11,6 +11,7 @@ import { TopRepositories } from "@/components/candidate/TopRepositories"
 import Navigation from "@/components/Navigation"
 import { AddToShortlistDropdown } from "@/components/shortlists/AddToShortlistDropdown"
 import { useCandidate } from "@/hooks/useCandidate"
+import { ApiError } from "@/lib/api-client"
 
 export default function CandidateProfilePage() {
 	const router = useRouter()
@@ -20,7 +21,7 @@ export default function CandidateProfilePage() {
 	const username = params?.username
 	const backTo = searchParams.get("backTo") || "/"
 
-	const { data: candidate, isLoading, error } = useCandidate(username)
+	const { data: candidate, status, error } = useCandidate(username)
 
 	if (!username) {
 		return (
@@ -32,6 +33,10 @@ export default function CandidateProfilePage() {
 			</div>
 		)
 	}
+
+	const apiError = error as ApiError | Error | null
+	const status404 =
+		apiError && "status" in apiError && (apiError as ApiError).status === 404
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -50,7 +55,7 @@ export default function CandidateProfilePage() {
 					)}
 				</div>
 
-				{isLoading && (
+				{status === "pending" && (
 					<div className="space-y-3">
 						<div className="h-6 w-48 animate-pulse rounded bg-muted" />
 						<div className="h-32 animate-pulse rounded bg-muted" />
@@ -58,23 +63,44 @@ export default function CandidateProfilePage() {
 					</div>
 				)}
 
-				{error && (
-					<div className="space-y-2">
-						<p className="text-red-600 text-sm">Failed to load candidate.</p>
-						<pre className="overflow-auto rounded border bg-muted p-3 text-xs">
-							{(error as Error).message}
-						</pre>
+				{status === "error" && status404 && (
+					<div className="rounded-lg border border-border/50 bg-card p-6 text-center">
+						<h2 className="text-lg font-semibold text-foreground">
+							No GitHub user named "{username}"
+						</h2>
+						<p className="mt-2 text-sm text-muted-foreground">
+							We couldn&apos;t find a GitHub account with that handle.
+							Double-check the spelling or try a different username.
+						</p>
 						<button
 							type="button"
 							onClick={() => router.push(backTo)}
-							className="rounded bg-black px-3 py-2 text-sm text-white"
+							className="mt-4 rounded-md border border-border/50 bg-background px-4 py-2 text-sm text-foreground hover:bg-muted"
 						>
-							Back to Search
+							Back to search
 						</button>
 					</div>
 				)}
 
-				{candidate && (
+				{status === "error" && !status404 && (
+					<div className="space-y-2 rounded-lg border border-border/50 bg-card p-6">
+						<p className="text-red-500 text-sm font-medium">
+							Failed to load candidate.
+						</p>
+						<pre className="overflow-auto rounded border bg-muted p-3 text-xs text-foreground">
+							{apiError?.message ?? "Unknown error"}
+						</pre>
+						<button
+							type="button"
+							onClick={() => router.push(backTo)}
+							className="rounded-md border border-border/50 bg-background px-4 py-2 text-sm text-foreground hover:bg-muted"
+						>
+							Back to search
+						</button>
+					</div>
+				)}
+
+				{status === "success" && candidate && (
 					<>
 						<ProfileHeader candidate={candidate} />
 
