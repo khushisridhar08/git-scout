@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link"
+
 export function ShortlistCandidatesTable(props: {
 	candidates: any[]
 	selected: Record<string, boolean>
@@ -42,8 +44,15 @@ export function ShortlistCandidatesTable(props: {
 								</td>
 
 								<td className="p-3">
-									<div className="font-medium">{c.name ?? c.username}</div>
-									<div className="text-xs opacity-70">@{c.username}</div>
+									<Link
+										href={`/candidates/${encodeURIComponent(c.username)}`}
+										className="group inline-block"
+									>
+										<div className="font-medium group-hover:underline">
+											{c.name ?? c.username}
+										</div>
+										<div className="text-xs opacity-70">@{c.username}</div>
+									</Link>
 								</td>
 
 								<td className="p-3">{c.score ?? "-"}</td>
