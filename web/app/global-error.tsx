@@ -1,18 +1,15 @@
 "use client"
 
-// import * as Sentry from '@sentry/nextjs'
-import NextError from "next/error"
-
-export default function GlobalError({
-	error,
-}: {
-	error: Error & { digest?: string }
-}) {
+export default function GlobalError() {
 	return (
 		<html lang="en">
 			<body>
-				{/* This is the default Next.js error component but it doesn't allow omitting the statusCode property yet. */}
-				<NextError statusCode={undefined as any} />
+				<main className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-background text-foreground">
+					<h1 className="text-2xl font-semibold">Something went wrong</h1>
+					<p className="text-sm opacity-70">
+						Please refresh the page or try again later.
+					</p>
+				</main>
 			</body>
 		</html>
 	)

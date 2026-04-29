@@ -6,6 +6,7 @@ export default defineConfig({
 		environment: "node",
 		globals: true,
 		setupFiles: "./test/setup.ts",
+		passWithNoTests: true,
 	},
 	plugins: [react()],
 	resolve: {

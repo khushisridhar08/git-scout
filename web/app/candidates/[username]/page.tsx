@@ -11,7 +11,7 @@ import { TopRepositories } from "@/components/candidate/TopRepositories"
 import Navigation from "@/components/Navigation"
 import { AddToShortlistDropdown } from "@/components/shortlists/AddToShortlistDropdown"
 import { useCandidate } from "@/hooks/useCandidate"
-import { ApiError } from "@/lib/api-client"
+import type { ApiError } from "@/lib/api-client"
 
 export default function CandidateProfilePage() {
 	const router = useRouter()

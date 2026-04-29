@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia"
 import { AiUnavailableError, aiService } from "../services/ai"
 import { githubService } from "../services/github"
+import { scoreProfile } from "../services/scoring"
 
 const AI_TOP_N = 10
 
@@ -46,13 +47,34 @@ export const searchRoutes = new Elysia({ prefix: "/search" })
 					1,
 				)
 
-				const top = githubResults.candidates
+				// The search API only returns thin user records, so its
+				// `gitscout_score` is a relevance heuristic — different from the
+				// talent score on the profile page. Hydrate the top N via
+				// `getUserProfile` (5-min cached) and rescore with `scoreProfile`
+				// so the list and profile show the same number.
+				const topByRelevance = githubResults.candidates
 					.slice()
 					.sort((a, b) => b.gitscout_score - a.gitscout_score)
 					.slice(0, AI_TOP_N)
 
+				const hydrated = await Promise.all(
+					topByRelevance.map(async (candidate) => {
+						try {
+							const profile = await githubService.getUserProfile(
+								candidate.login,
+							)
+							const { score } = scoreProfile(profile)
+							return { ...candidate, gitscout_score: score }
+						} catch {
+							return candidate
+						}
+					}),
+				)
+
+				hydrated.sort((a, b) => b.gitscout_score - a.gitscout_score)
+
 				const explained = await Promise.all(
-					top.map(async (candidate) => {
+					hydrated.map(async (candidate) => {
 						const ai = await aiService
 							.explainCandidate({
 								username: candidate.login,

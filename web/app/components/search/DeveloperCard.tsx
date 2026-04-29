@@ -23,7 +23,7 @@ export function DeveloperCard({
 			<Link
 				href={href}
 				className={cn(
-					"group rounded-lg border border-border/50 bg-card p-5 transition-colors hover:border-border",
+					"group block rounded-lg border border-border/50 bg-card p-5 transition-colors hover:border-border",
 					className,
 				)}
 			>
@@ -56,7 +56,7 @@ export function DeveloperCard({
 		<Link
 			href={href}
 			className={cn(
-				"group rounded-lg border border-border/50 bg-card p-5 transition-colors hover:border-border",
+				"group block rounded-lg border border-border/50 bg-card p-5 transition-colors hover:border-border",
 				className,
 			)}
 		>

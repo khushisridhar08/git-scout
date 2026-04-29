@@ -19,9 +19,3 @@ export type ShortlistDetail = ShortlistSummary & {
 export type ShortlistCreateInput = {
 	name: string
 }
-
-/** Legacy alias kept for components that imported the older name. */
-export type Shortlist = ShortlistSummary
-
-/** Legacy alias for components that imported the older detail name. */
-export type ShortlistItem = ShortlistDetail

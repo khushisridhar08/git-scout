@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next"
-import Package from "@/package.json"
+import { APP_CONFIG } from "@/config"
 
 export default function manifest(): MetadataRoute.Manifest {
 	return {
 		background_color: "#000000",
-		description: Package.description,
+		description: APP_CONFIG.DESCRIPTION,
 		display: "standalone",
 		icons: [
 			{
@@ -13,8 +13,8 @@ export default function manifest(): MetadataRoute.Manifest {
 				type: "image/x-icon",
 			},
 		],
-		name: Package.name,
-		short_name: Package.name,
+		name: APP_CONFIG.NAME,
+		short_name: APP_CONFIG.NAME,
 		start_url: "/",
 		theme_color: "#000000",
 	}

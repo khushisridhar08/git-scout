@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
 	useAddCandidateToShortlist,
 	useCreateShortlist,
@@ -22,11 +22,12 @@ export function AddToShortlistDropdown(props: {
 	const [open, setOpen] = useState(false)
 	const [creating, setCreating] = useState(false)
 	const [newName, setNewName] = useState("")
+	const newNameInputRef = useRef<HTMLInputElement>(null)
 
 	const shortlists = useMemo(() => {
 		return (data ?? [])
 			.slice()
-			.sort((a: any, b: any) => (a.name ?? "").localeCompare(b.name ?? ""))
+			.sort((a, b) => a.name.localeCompare(b.name))
 	}, [data])
 
 	useEffect(() => {
@@ -34,6 +35,10 @@ export function AddToShortlistDropdown(props: {
 			setCreating(true)
 		}
 	}, [open, shortlists.length])
+
+	useEffect(() => {
+		if (creating) newNameInputRef.current?.focus()
+	}, [creating])
 
 	const close = () => {
 		setOpen(false)
@@ -74,7 +79,7 @@ export function AddToShortlistDropdown(props: {
 
 					{!creating && (
 						<div className="max-h-72 overflow-auto">
-							{shortlists.map((s: any) => (
+							{shortlists.map((s) => (
 								<button
 									type="button"
 									key={s.id}
@@ -100,7 +105,7 @@ export function AddToShortlistDropdown(props: {
 							className="p-2 space-y-2"
 						>
 							<input
-								autoFocus
+								ref={newNameInputRef}
 								type="text"
 								value={newName}
 								onChange={(e) => setNewName(e.target.value)}
